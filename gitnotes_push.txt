@@ -1,0 +1,53 @@
+git submodule add https://github.com/somanybugs/AndroidDrawerLayout.git library/AndroidDrawerLayout
+git submodule add https://github.com/somanybugs/CanvasScrollView.git library/CanvasScrollView
+git submodule add https://github.com/somanybugs/AndroidMarkdown.git library/AndroidMarkdown
+git submodule add https://github.com/somanybugs/AndroidEntityUI.git library/AndroidEntityUI
+git submodule add https://github.com/somanybugs/AndroidCommon.git library/AndroidCommon
+
+
+git clone https://github.com/somanybugs/AndroidDrawerLayout.git library/AndroidDrawerLayout
+git clone https://github.com/somanybugs/CanvasScrollView.git library/CanvasScrollView
+git clone https://github.com/somanybugs/AndroidMarkdown.git library/AndroidMarkdown
+git clone https://github.com/somanybugs/AndroidEntityUI.git library/AndroidEntityUI
+git clone https://github.com/somanybugs/AndroidCommon.git library/AndroidCommon
+git clone https://github.com/somanybugs/AndroidExcelView.git library/AndroidExcelView 
+git clone https://github.com/somanybugs/AndroidGitNotes.git library/AndroidGitNotes 
+
+
+cd AndroidDrawerLayout
+git add .
+git commit -m init
+git push
+cd ..
+
+cd CanvasScrollView
+git add .
+git commit -m init
+git push
+cd ..
+
+cd AndroidMarkdown
+git add .
+git commit -m init
+git push
+cd ..
+
+cd AndroidEntityUI
+git add .
+git commit -m init
+git push
+cd ..
+
+cd AndroidCommon
+git add .
+git commit -m init
+git push
+cd ..
+
+cd AndroidExcelView
+git add .
+git commit -m init
+git push
+cd ..
+
+
