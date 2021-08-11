@@ -1,0 +1,9 @@
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+    <item android:id="@+id/action_undo" android:title="edit" android:icon="@drawable/outline_undo_white_24"
+        app:showAsAction="always" />
+    <item android:id="@+id/action_redo" android:title="edit" android:icon="@drawable/outline_redo_white_24"
+        app:showAsAction="always" />
+    <item android:id="@+id/action_done" android:title="edit" android:icon="@drawable/outline_done_white_24"
+        app:showAsAction="always" />
+</menu>

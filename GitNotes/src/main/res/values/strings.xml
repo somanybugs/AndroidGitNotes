@@ -1,0 +1,60 @@
+<resources>
+    <string name="the_app_name">GitNotes</string>
+
+    <string name="navigation_drawer_open">Open navigation drawer</string>
+    <string name="navigation_drawer_close">Close navigation drawer</string>
+
+    <string name="encrypt_backup_info">请您牢记当前您的登录密码,以后使用此备份文件恢复数据的时候将会使用该密码进行解密!</string>
+    <string name="git_ssh_we_need_ssh_keys">We need SSH keys to authorize your repo.</string>
+    <string name="git_ssh_generate_new_keys">Generate new SSH keys</string>
+    <string name="git_ssh_provide_custom_keys">Provide custom SSH keys</string>
+
+    <string name="git_ssh_generate_keys_tip">The public key must be provided to authorize your git repository.</string>
+    <string name="git_ssh_generate_keys_step_1">1.Copy the public key</string>
+    <string name="git_ssh_generate_keys_step_2">2.Give the public key to your git repo.</string>
+    <string name="git_ssh_generate_keys_step_3">3.Try Cloning.</string>
+    <string name="copy_key">Copy key</string>
+    <string name="regenerate_key">Regenerate key</string>
+    <string name="clone_repo">Clone Repo</string>
+    <string name="public_key">Public Key</string>
+    <string name="private_key">Private Key</string>
+    <string name="or_load_public_key_file">Or Load Public Key From File</string>
+    <string name="or_load_private_key_file">Or Load Private Key From File</string>
+    <string name="already_copy_the_key">Already copy the key to your clipboard</string>
+
+    <string name="create">Create</string>
+
+    <string name="encrypt_folder">Encrypt Folder</string>
+    <string name="decrypt_folder">Decrypt Folder</string>
+    <string name="select">Select</string>
+    <string name="move">Move</string>
+    <string name="delete">Delete</string>
+    <string name="input_password">Please input password</string>
+    <string name="error">Error</string>
+    <string name="confirm_delete_files">Really delete the files?</string>
+    <string name="passowrd_error">Password error</string>
+    <string name="empty_input">Empty input</string>
+    <string name="refresh">Refresh</string>
+    <string name="success">Success</string>
+    <string name="encrypt">Encrypt</string>
+    <string name="decrypt">Decrypt</string>
+    <string name="authorize">Authorize</string>
+    <string name="done">Done</string>
+    <string name="none_selected">None selected</string>
+    <string name="forbid_move_encrypt_folder">Forbid move encrypt folder</string>
+    <string name="encrypt_folder_tips">Please remember the password of the folder, all files under the folder will be encrypted,
+        and synced to the server! Once you forget the password, you will lose the files forever!!</string>
+    <string name="decrypt_folder_tips">After you decrypt the folder, all files under the folder will be saved in clear text, and synced to the server!!</string>
+    <string name="select_folder">Select folder</string>
+    <string name="confirm_delete_repo">Really delete the repository</string>
+    <string name="folder">Folder</string>
+    <string name="markdown">Markdown</string>
+    <string name="txt">Txt</string>
+    <string name="todo">Todo List</string>
+    <string name="password">Password</string>
+    <string name="rename">Rename</string>
+    <string name="modify">Modify</string>
+    <string name="begin">Begin</string>
+    <string name="sync">Sync</string>
+    <string name="search">Search</string>
+</resources>

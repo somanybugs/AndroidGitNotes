@@ -1,0 +1,5 @@
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+    <item android:id="@+id/action_goodpay" android:title="好评/赞赏"
+        app:showAsAction="always" />
+</menu>

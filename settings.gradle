@@ -1,0 +1,9 @@
+include ':GitNotes', ':library:jgit3', ':library:CanvasScrollView',':library:AndroidMarkdown'
+include ':library:AndroidDrawerLayout',':library:AndroidCommon',':library:AndroidEntityUI'
+project(':library:AndroidCommon').projectDir = new File('./library/AndroidCommon/AndroidCommon')
+project(':library:jgit3').projectDir = new File('./library/jgit3')
+project(':library:CanvasScrollView').projectDir = new File('./library/CanvasScrollView/CanvasScrollView')
+project(':library:AndroidMarkdown').projectDir = new File('./library/AndroidMarkdown/AndroidMarkdown')
+project(':library:AndroidDrawerLayout').projectDir = new File('./library/AndroidDrawerLayout/AndroidDrawerLayout')
+project(':library:AndroidEntityUI').projectDir = new File('./library/AndroidEntityUI/AndroidEntityUI')
+

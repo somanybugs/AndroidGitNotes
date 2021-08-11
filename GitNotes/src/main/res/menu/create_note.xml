@@ -1,0 +1,25 @@
+<menu xmlns:tools="http://schemas.android.com/tools"
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+    <item android:id="@+id/action_folder" android:title="@string/folder"
+        android:icon="@drawable/ic_note_folder"
+        android:showAsAction="always"
+        app:showAsAction="always"
+        tools:ignore="AppCompatResource" />
+    <item android:id="@+id/action_md" android:title="@string/markdown"
+        android:showAsAction="always"
+        app:showAsAction="always"
+        tools:ignore="AppCompatResource" />
+    <item android:id="@+id/action_txt" android:title="@string/txt"
+        android:showAsAction="always"
+        app:showAsAction="always"
+        tools:ignore="AppCompatResource" />
+    <item android:id="@+id/action_todo" android:title="@string/todo"
+        android:showAsAction="always"
+        app:showAsAction="always"
+        tools:ignore="AppCompatResource" />
+    <item android:id="@+id/action_pwd" android:title="@string/password"
+        android:showAsAction="always"
+        app:showAsAction="always"
+        tools:ignore="AppCompatResource" />
+</menu>

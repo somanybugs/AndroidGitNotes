@@ -1,0 +1,15 @@
+[submodule "library/AndroidDrawerLayout"]
+	path = library/AndroidDrawerLayout
+	url = https://github.com/somanybugs/AndroidDrawerLayout.git
+[submodule "library/CanvasScrollView"]
+	path = library/CanvasScrollView
+	url = https://github.com/somanybugs/CanvasScrollView.git
+[submodule "library/AndroidMarkdown"]
+	path = library/AndroidMarkdown
+	url = https://github.com/somanybugs/AndroidMarkdown.git
+[submodule "library/AndroidEntityUI"]
+	path = library/AndroidEntityUI
+	url = https://github.com/somanybugs/AndroidEntityUI.git
+[submodule "library/AndroidCommon"]
+	path = library/AndroidCommon
+	url = https://github.com/somanybugs/AndroidCommon.git
