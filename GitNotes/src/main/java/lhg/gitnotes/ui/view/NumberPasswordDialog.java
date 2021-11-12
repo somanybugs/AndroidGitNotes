@@ -10,7 +10,7 @@ public class NumberPasswordDialog extends InputDialog {
 
     public NumberPasswordDialog(Context context) {
         super(context);
-        getEditText().setInputType(InputType.TYPE_CLASS_NUMBER|InputType.TYPE_CLASS_TEXT |InputType.TYPE_TEXT_VARIATION_PASSWORD);
+        getEditText().setInputType(InputType.TYPE_CLASS_NUMBER|InputType.TYPE_NUMBER_VARIATION_PASSWORD);
         setTitle(R.string.input_password);
     }
 }

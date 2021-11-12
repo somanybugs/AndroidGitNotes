@@ -64,9 +64,16 @@ public class MDEditor extends FileEditor {
         return true;
     }
 
-    private void initRedoUndo() {
+    @Override
+    protected void onResume() {
+        super.onResume();
+        if (editText.getSelectionStart() == -1) {
+            editText.setSelection(0);
+        }
         editText.requestFocus();
-        editText.setSelection(0);
+    }
+
+    private void initRedoUndo() {
         undoRedo.init(editText);
         undoRedo.setCallback((i, j) -> invalidateOptionsMenu());
     }
@@ -150,7 +157,7 @@ public class MDEditor extends FileEditor {
 
     private void createEditIconView(LinearLayout parent, String text, Runnable runnable) {
         TextView view = new TextView(parent.getContext());
-        view.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 30);
+        view.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 18);
         view.setGravity(Gravity.CENTER);
         view.setTextColor(DrawableUtils.colorStateList(Color.BLACK, ColorUtils.getAccentColor(this)));
         int p = DimenUtils.dip2px(parent.getContext(), 8);

@@ -1,6 +1,5 @@
 package lhg.gitnotes.note.ui;
 
-import android.database.ContentObserver;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.text.TextUtils;
@@ -40,7 +39,6 @@ import lhg.gitnotes.note.md.ui.MDViewer;
 import lhg.gitnotes.app.AppConstant;
 import lhg.gitnotes.note.FolderEntity;
 import lhg.gitnotes.note.NoteEntity;
-import lhg.gitnotes.note.pwd.PasswordEntity;
 import lhg.gitnotes.note.pwd.ui.PasswordEditor;
 import lhg.gitnotes.note.todo.ui.TodoEditor;
 import lhg.gitnotes.note.txt.ui.TxtEditor;
@@ -64,7 +62,6 @@ import io.reactivex.rxjava3.schedulers.Schedulers;
 public class NodesListFragment extends AppBaseFragment {
     GitConfig gitConfig;
     NoteFolderHelper folderHelper;
-    ContentObserver observer;
     NoteListAdapter adapter;
     RecyclerView recyclerView;
     TextView tvPath;

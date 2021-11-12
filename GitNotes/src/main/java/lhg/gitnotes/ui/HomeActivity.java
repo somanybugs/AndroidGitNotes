@@ -11,6 +11,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.TextView;
 
+import androidx.appcompat.widget.SearchView;
 import androidx.appcompat.widget.Toolbar;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
@@ -145,6 +146,7 @@ public class HomeActivity extends AppBaseActivity implements HomeLeftDrawerFragm
             syncRepo();
             return true;
         } else if (item.getItemId() == R.id.action_search) {
+            startActivity(new Intent(this, SearchActivity.class));
             return true;
         }
         return super.onOptionsItemSelected(item);

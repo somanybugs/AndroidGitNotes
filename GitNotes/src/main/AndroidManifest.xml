@@ -70,12 +70,12 @@
         <activity android:name=".note.md.ui.MDEditor"
             android:configChanges="keyboard|keyboardHidden|orientation|screenSize"
             android:screenOrientation="portrait"
-            android:windowSoftInputMode="stateAlwaysVisible"
+            android:windowSoftInputMode="stateAlwaysVisible|adjustResize"
             />
         <activity android:name=".note.txt.ui.TxtEditor"
             android:configChanges="keyboard|keyboardHidden|orientation|screenSize"
             android:screenOrientation="portrait"
-            android:windowSoftInputMode="stateAlwaysVisible"
+            android:windowSoftInputMode="stateAlwaysVisible|adjustResize"
             android:label="TxtEditer"
             />
         <activity android:name=".note.txt.ui.TxtViewer"
@@ -92,6 +92,11 @@
             android:configChanges="keyboard|keyboardHidden|orientation|screenSize"
             android:screenOrientation="portrait"
             android:label="TodoEditor"
+            />
+        <activity android:name=".ui.SearchActivity"
+            android:configChanges="keyboard|keyboardHidden|orientation|screenSize"
+            android:screenOrientation="portrait"
+            android:label="Search"
             />
     </application>
 
