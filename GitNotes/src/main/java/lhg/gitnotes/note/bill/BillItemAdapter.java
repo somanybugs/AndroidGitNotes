@@ -1,5 +1,7 @@
 package lhg.gitnotes.note.bill;
 
+import android.app.AlertDialog;
+import android.content.DialogInterface;
 import android.graphics.drawable.StateListDrawable;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -137,11 +139,16 @@ public class BillItemAdapter extends RecyclerClickAdapter<BillEntity, BillItemAd
             tvMoney = itemView.findViewById(R.id.tvMoney);
             ivClose = itemView.findViewById(R.id.ivClose);
             tvName = itemView.findViewById(R.id.tvName);
-            ivClose.setOnClickListener(v -> onDelete(item));
+            ivClose.setOnClickListener(v -> delete(item));
         }
 
-        protected void onChecked(BillEntity item) {
-
+        private void delete(BillEntity item) {
+            new AlertDialog.Builder(itemView.getContext())
+                    .setTitle(R.string.confirm_delete)
+                    .setMessage(item.name + "  " + Utils.fen2yuan(item.money))
+                    .setPositiveButton(android.R.string.ok, (dialog, which) -> onDelete(item))
+                    .setNegativeButton(android.R.string.cancel, null)
+                    .show();
         }
 
         protected void onDelete(BillEntity item) {

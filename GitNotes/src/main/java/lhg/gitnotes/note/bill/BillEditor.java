@@ -102,13 +102,6 @@ public class BillEditor extends FileEditor {
             public VH onCreateViewHolder(@NonNull @NotNull ViewGroup parent, int viewType) {
                 return new VH(parent){
                     @Override
-                    protected void onChecked(BillEntity item) {
-                        super.onChecked(item);
-                        saveLocalFile();
-                        hasChanged = true;
-                    }
-
-                    @Override
                     protected void onDelete(BillEntity item) {
                         super.onDelete(item);
                         hasChanged = true;
