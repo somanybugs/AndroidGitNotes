@@ -31,6 +31,7 @@ import lhg.gitnotes.git.action.GitEncryptFolder;
 import lhg.gitnotes.git.action.GitMove;
 import lhg.gitnotes.git.action.GitRename;
 import lhg.gitnotes.git.action.GitSync;
+import lhg.gitnotes.note.bill.BillEditor;
 import lhg.gitnotes.utils.AppUtils;
 import lhg.gitnotes.note.NoteFolderHelper;
 import lhg.gitnotes.note.NoteFolderHelper.DatasHolder;
@@ -182,7 +183,9 @@ public class NodesListFragment extends AppBaseFragment {
             startActivity(PasswordEditor.makeIntent(getContext(), path, gitConfig, password));
         } else if (path.endsWith(AppConstant.FileSuffix.TODO)) {
             startActivity(TodoEditor.makeIntent(getContext(), path, gitConfig, password));
-        } else {
+        } else if (path.endsWith(AppConstant.FileSuffix.BILL)) {
+            startActivity(BillEditor.makeIntent(getContext(), path, gitConfig, password));
+        }  else {
             startActivity(TxtViewer.makeIntent(getContext(), path, gitConfig, password));
         }
     }
@@ -195,7 +198,9 @@ public class NodesListFragment extends AppBaseFragment {
             startActivity(PasswordEditor.makeIntent(getContext(), path, gitConfig, password));
         } else if (path.endsWith(AppConstant.FileSuffix.TODO)) {
             startActivity(TodoEditor.makeIntent(getContext(), path, gitConfig, password));
-        } else {
+        } else if (path.endsWith(AppConstant.FileSuffix.BILL)) {
+            startActivity(BillEditor.makeIntent(getContext(), path, gitConfig, password));
+        }  else {
             startActivity(TxtEditor.makeIntent(getContext(), path, gitConfig, password));
         }
     }

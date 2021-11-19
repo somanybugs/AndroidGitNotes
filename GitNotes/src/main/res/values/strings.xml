@@ -57,4 +57,9 @@
     <string name="begin">Begin</string>
     <string name="sync">Sync</string>
     <string name="search">Search</string>
+    <string name="name">Name</string>
+    <string name="time">Time</string>
+    <string name="money">Money</string>
+    <string name="total">Total</string>
+    <string name="bill">Bill</string>
 </resources>

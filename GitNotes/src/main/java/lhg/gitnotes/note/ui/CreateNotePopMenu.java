@@ -48,6 +48,9 @@ public abstract class CreateNotePopMenu extends PopupMenu {
                 case R.id.action_todo:
                     showDialog(itemId, R.string.todo, AppConstant.FileSuffix.TODO);
                     break;
+                case R.id.action_bill:
+                    showDialog(itemId, R.string.bill, AppConstant.FileSuffix.BILL);
+                    break;
                 case R.id.action_pwd:
                     showDialog(itemId, R.string.password, AppConstant.FileSuffix.PWD);
                     break;

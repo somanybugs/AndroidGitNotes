@@ -17,11 +17,13 @@ public class AppConstant {
         public static final String TXT = ".txt";
         public static final String PWD = ".pwd";
         public static final String TODO = ".todo";
+        public static final String BILL = ".bill";
         public static final String FOLDER = "folder";
 
         static final List<String> SupportSuffixs = Arrays.asList(
                 AppConstant.FileSuffix.MD, AppConstant.FileSuffix.TXT,
-                AppConstant.FileSuffix.PWD, AppConstant.FileSuffix.TODO
+                AppConstant.FileSuffix.PWD, AppConstant.FileSuffix.TODO,
+                AppConstant.FileSuffix.BILL
         );
         public static boolean support(String fileName) {
             String suffix = "." + FileUtils.getSuffix(fileName).toLowerCase();

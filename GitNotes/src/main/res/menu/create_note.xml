@@ -18,6 +18,10 @@
         android:showAsAction="always"
         app:showAsAction="always"
         tools:ignore="AppCompatResource" />
+    <item android:id="@+id/action_bill" android:title="@string/bill"
+        android:showAsAction="always"
+        app:showAsAction="always"
+        tools:ignore="AppCompatResource" />
     <item android:id="@+id/action_pwd" android:title="@string/password"
         android:showAsAction="always"
         app:showAsAction="always"
