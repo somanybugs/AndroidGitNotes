@@ -1,4 +1,4 @@
-package lhg.gitnotes.note.bill;
+package lhg.gitnotes.note.bill.ui;
 
 import android.content.Context;
 import android.content.Intent;
@@ -31,10 +31,10 @@ import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers;
 import io.reactivex.rxjava3.core.Single;
 import io.reactivex.rxjava3.schedulers.Schedulers;
 import lhg.common.utils.ColorUtils;
-import lhg.common.utils.DateFormater;
 import lhg.common.utils.Utils;
 import lhg.gitnotes.R;
 import lhg.gitnotes.git.GitConfig;
+import lhg.gitnotes.note.bill.BillEntity;
 import lhg.gitnotes.ui.FileEditor;
 
 public class BillEditor extends FileEditor {

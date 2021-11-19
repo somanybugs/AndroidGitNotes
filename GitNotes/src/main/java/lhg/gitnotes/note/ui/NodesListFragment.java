@@ -31,7 +31,7 @@ import lhg.gitnotes.git.action.GitEncryptFolder;
 import lhg.gitnotes.git.action.GitMove;
 import lhg.gitnotes.git.action.GitRename;
 import lhg.gitnotes.git.action.GitSync;
-import lhg.gitnotes.note.bill.BillEditor;
+import lhg.gitnotes.note.bill.ui.BillEditor;
 import lhg.gitnotes.utils.AppUtils;
 import lhg.gitnotes.note.NoteFolderHelper;
 import lhg.gitnotes.note.NoteFolderHelper.DatasHolder;

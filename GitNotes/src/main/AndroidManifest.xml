@@ -93,7 +93,7 @@
             android:screenOrientation="portrait"
             android:label="TodoEditor"
             />
-        <activity android:name=".note.bill.BillEditor"
+        <activity android:name=".note.bill.ui.BillEditor"
             android:configChanges="keyboard|keyboardHidden|orientation|screenSize"
             android:screenOrientation="portrait"
             android:label="BillEditor"

@@ -1,7 +1,6 @@
-package lhg.gitnotes.note.bill;
+package lhg.gitnotes.note.bill.ui;
 
 import android.app.AlertDialog;
-import android.content.DialogInterface;
 import android.graphics.drawable.StateListDrawable;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -19,6 +18,7 @@ import lhg.common.adapter.RecyclerClickAdapter;
 import lhg.common.utils.DrawableUtils;
 import lhg.common.utils.Utils;
 import lhg.gitnotes.R;
+import lhg.gitnotes.note.bill.BillEntity;
 
 public class BillItemAdapter extends RecyclerClickAdapter<BillEntity, BillItemAdapter.VH> {
 
@@ -163,7 +163,7 @@ public class BillItemAdapter extends RecyclerClickAdapter<BillEntity, BillItemAd
             this.item = item;
             itemView.setBackground(isEditing ? itemDrawableInSelecting : itemDrawable);
             itemView.setSelected(isEditing && isSelected);
-            tvName.setText(item.name + "  " + item.time);
+            tvName.setText(item.name + "  " + Utils.nil(item.time));
             tvMoney.setText(Utils.fen2yuan(item.money));
         }
     }
