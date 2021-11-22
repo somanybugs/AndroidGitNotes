@@ -107,6 +107,7 @@ public class BillEditor extends FileEditor {
                         hasChanged = true;
                         datas.remove(item);
                         adapter.notifyDataSetChanged();
+                        updateTotal();
                     }
                 };
             }
@@ -143,14 +144,14 @@ public class BillEditor extends FileEditor {
         TextInputLayout tilTime = view.findViewById(R.id.editTime);
         TextInputLayout tilMoney = view.findViewById(R.id.editMoney);
 
-        if (p.money > 0) {
-            tilMoney.getEditText().setText(Utils.fen2yuan(p.money));
-        }
         if (TextUtils.isEmpty(p.time)) {
-            p.time = showyyyyMMddHHmm.format(new Date());
+            tilTime.getEditText().setText(showyyyyMMddHHmm.format(new Date()));
+        } else {
+            tilTime.getEditText().setText(p.time);
         }
         tilName.getEditText().setText(p.name);
-        tilTime.getEditText().setText(p.time);
+        tilMoney.getEditText().setText(p.money);
+
 
         new AlertDialog.Builder(this)
                 .setTitle("Edit Item Content")
@@ -165,7 +166,7 @@ public class BillEditor extends FileEditor {
                     if (TextUtils.isEmpty(finalP.time)) {
                         tilTime.setError(getString(R.string.empty_input));
                     }
-                    finalP.money = Utils.yuan2fen(tilMoney.getEditText().getText().toString());
+                    finalP.money = tilMoney.getEditText().getText().toString();
 
                     if (index >= 0) {
                         datas.set(index, finalP);
@@ -179,6 +180,7 @@ public class BillEditor extends FileEditor {
                     updateTotal();
                 }).setNegativeButton(android.R.string.cancel, null)
                 .show();
+        Utils.showKeyboard(tilName.getEditText());
     }
 
     private void updateTotal() {
@@ -186,11 +188,24 @@ public class BillEditor extends FileEditor {
         long money = 0;
         if (datas != null) {
             for (BillEntity b : datas) {
-                money += b.money;
+                money += Utils.yuan2fen(b.money);
             }
         }
         tvTotal.append("   ");
-        tvTotal.append(Utils.fen2yuan(money));
+        tvTotal.append(fen2yuan(money));
+    }
+
+    private static String fen2yuan(long a) {
+        String prefix = "";
+        if (a < 0) {
+            prefix = "-";
+            a = -a;
+        }
+        prefix = prefix + String.format("%d.%02d", a/100, a%100);
+        if (prefix.endsWith(".00")) {
+            prefix = prefix.substring(0, prefix.length() - 3);
+        }
+        return prefix;
     }
 
     private void initListView() {

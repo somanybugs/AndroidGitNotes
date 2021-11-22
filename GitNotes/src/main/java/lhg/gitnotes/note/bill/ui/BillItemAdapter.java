@@ -16,7 +16,6 @@ import java.util.List;
 
 import lhg.common.adapter.RecyclerClickAdapter;
 import lhg.common.utils.DrawableUtils;
-import lhg.common.utils.Utils;
 import lhg.gitnotes.R;
 import lhg.gitnotes.note.bill.BillEntity;
 
@@ -130,6 +129,7 @@ public class BillItemAdapter extends RecyclerClickAdapter<BillEntity, BillItemAd
         StateListDrawable itemDrawable;
         View ivClose;
         TextView tvName;
+        TextView tvTime;
         TextView tvMoney;
 
         public VH(@NonNull View itemView) {
@@ -139,13 +139,14 @@ public class BillItemAdapter extends RecyclerClickAdapter<BillEntity, BillItemAd
             tvMoney = itemView.findViewById(R.id.tvMoney);
             ivClose = itemView.findViewById(R.id.ivClose);
             tvName = itemView.findViewById(R.id.tvName);
+            tvTime = itemView.findViewById(R.id.tvTime);
             ivClose.setOnClickListener(v -> delete(item));
         }
 
         private void delete(BillEntity item) {
             new AlertDialog.Builder(itemView.getContext())
                     .setTitle(R.string.confirm_delete)
-                    .setMessage(item.name + "  " + Utils.fen2yuan(item.money))
+                    .setMessage(item.name + "  " + item.money)
                     .setPositiveButton(android.R.string.ok, (dialog, which) -> onDelete(item))
                     .setNegativeButton(android.R.string.cancel, null)
                     .show();
@@ -163,8 +164,9 @@ public class BillItemAdapter extends RecyclerClickAdapter<BillEntity, BillItemAd
             this.item = item;
             itemView.setBackground(isEditing ? itemDrawableInSelecting : itemDrawable);
             itemView.setSelected(isEditing && isSelected);
-            tvName.setText(item.name + "  " + Utils.nil(item.time));
-            tvMoney.setText(Utils.fen2yuan(item.money));
+            tvName.setText(item.name);
+            tvTime.setText(item.time);
+            tvMoney.setText(item.money);
         }
     }
 

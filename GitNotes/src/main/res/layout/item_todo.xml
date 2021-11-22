@@ -1,13 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:gravity="center_vertical"
     android:minHeight="40dip"
-    android:orientation="horizontal"
-    android:paddingTop="8dp"
-    android:paddingBottom="8dp">
+    android:orientation="horizontal">
 
     <ImageView
         android:paddingLeft="@dimen/activity_horizontal_margin"
@@ -24,13 +22,14 @@
         android:layout_height="wrap_content"
         android:textSize="16sp" />
 
-    <ImageView
+
+    <androidx.appcompat.widget.AppCompatImageView
         android:background="@drawable/pcm_ic_menuitem"
-        android:paddingLeft="8dp"
-        android:paddingRight="8dp"
+        android:padding="8dp"
         android:id="@+id/ivClose"
         android:src="@drawable/outline_close_black_24"
+        app:tint="@color/gray"
         android:layout_width="wrap_content"
-        android:layout_height="match_parent" />
+        android:layout_height="wrap_content" />
 
 </LinearLayout>

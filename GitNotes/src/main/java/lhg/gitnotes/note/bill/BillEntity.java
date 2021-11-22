@@ -8,7 +8,7 @@ public class BillEntity implements Serializable {
     public String uuid;
     public String time;
     public String name;
-    public long money;
+    public String money;
 
 
     @Override

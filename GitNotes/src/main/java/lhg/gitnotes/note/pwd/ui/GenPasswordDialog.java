@@ -97,6 +97,7 @@ public class GenPasswordDialog extends AlertDialog {
     public void show() {
         super.show();
         getWindow().setLayout(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+        getButton(AlertDialog.BUTTON_NEUTRAL).setOnClickListener(view1 -> doRefresh());
     }
 
     private void doCopy() {
