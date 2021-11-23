@@ -32,6 +32,8 @@ public class SettingActivity extends AppBaseActivity {
         @Override
         public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
             FingerHelper.Entity entity = FingerHelper.Entity.get(getActivity());
+            entity.reset();
+            entity.save(getActivity());
             if (isChecked) {
                 FingerHelper.Setup.enableFingerprintVerification(getActivity(), "开启加密文件夹指纹验证",
                         () -> {
@@ -39,10 +41,8 @@ public class SettingActivity extends AppBaseActivity {
                             buttonView.setChecked(false);
                             buttonView.setOnCheckedChangeListener(this);
                         },
-                        () -> { });
-            } else {
-                entity.reset();
-                entity.save(getActivity());
+                        () -> {
+                        });
             }
         }
     };
