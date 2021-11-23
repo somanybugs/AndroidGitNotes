@@ -136,7 +136,7 @@ public class NodesListFragment extends AppBaseFragment {
     }
 
     public synchronized void openDir(String path, boolean refresh) {
-        folderHelper.openFolder(getContext(), path, refresh ? openFolderCallbackRefresh : openFolderCallback);
+        folderHelper.openFolder(getActivity(), path, refresh ? openFolderCallbackRefresh : openFolderCallback);
     }
 
     private synchronized void doOpenDir(String folder, boolean refresh) {

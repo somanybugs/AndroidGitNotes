@@ -1,5 +1,6 @@
 package lhg.gitnotes.note;
 
+import android.app.Activity;
 import android.content.Context;
 import android.text.SpannableStringBuilder;
 import android.text.TextPaint;
@@ -9,8 +10,13 @@ import android.util.Pair;
 import android.view.View;
 
 import androidx.annotation.NonNull;
+import androidx.fragment.app.FragmentActivity;
+
+import org.json.JSONArray;
+import org.json.JSONObject;
 
 import lhg.gitnotes.R;
+import lhg.gitnotes.app.FingerHelper;
 import lhg.gitnotes.git.GitConfig;
 import lhg.gitnotes.utils.EncryptFolderUtils;
 import lhg.gitnotes.ui.view.NumberPasswordDialog;
@@ -21,6 +27,7 @@ import lhg.common.view.InputDialog;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Stack;
 
@@ -29,9 +36,13 @@ public class NoteFolderHelper {
     private final GitConfig gitConfig;
     private final Stack<DatasHolder> folderStack = new Stack<>();
     Pair<String, String> folderKey;
+    FingerHelper.Login fingerLoginHelper = new FingerHelper.Login();
+    private final CachedFolderKeys cachedFolderKeys;
 
     public NoteFolderHelper(GitConfig gitConfig) {
         this.gitConfig = gitConfig;
+        this.cachedFolderKeys = new CachedFolderKeys(new File(gitConfig.getRootDir(), "cached_folder_keys.json"));
+        this.cachedFolderKeys.load();
     }
 
     public String ensureFolder(String path) {
@@ -83,24 +94,63 @@ public class NoteFolderHelper {
             return;
         }
 
+
         String finalDirPath = path;
+        Activity activity = Utils.getActivityFromContext(context);
+        CachedFolderKey cachedFolderKey = cachedFolderKeys.find(path);
+        FingerHelper.Entity entity = FingerHelper.Entity.get(context);
+        if (entity.isEnable() && activity instanceof FragmentActivity && fingerLoginHelper.init((FragmentActivity) activity)) {
+            fingerLoginHelper.show((fingerprintKey, error) -> {
+                boolean needInputKey = true;
+                if (fingerprintKey != null && cachedFolderKey != null) {
+                    byte[] plainKey = FingerHelper.decryptBytes2bytes(fingerprintKey, cachedFolderKey.encryptedKey);
+                    if (plainKey != null && plainKey.length > 0) {
+                        String plainKeyStr = new String(plainKey);
+                        if (!openEncryptFolder(context, lockFile, finalDirPath, plainKeyStr, callback)) {
+                            cachedFolderKeys.remove(finalDirPath);
+                        } else {
+                            needInputKey = false;
+                        }
+                    }
+                }
+                if (needInputKey) {
+                    inputKeyToOpenEncryptFolder(context, fingerprintKey, lockFile, finalDirPath, callback);
+                }
+            });
+        } else {
+            inputKeyToOpenEncryptFolder(context, null, lockFile, finalDirPath, callback);
+        }
+    }
+
+    private void inputKeyToOpenEncryptFolder(Context context, byte[] fingerprintKey, File lockFile, String path, OpenFolderCallback callback) {
         NumberPasswordDialog dialog = new NumberPasswordDialog(context);
         dialog.setOnInputListener(new InputDialog.SimpleOnInputListener() {
             @Override
             public void onInput(InputDialog dialog, String text) {
                 if (!TextUtils.isEmpty(text)) {
-                    try {
-                        byte[] key = EncryptFolderUtils.decryptKey(text, lockFile);
-                        folderKey = new Pair<>(finalDirPath, Utils.bytesToHEX(key));
-                        callback.openFolder(finalDirPath);
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                        ToastUtil.show(context, context.getString(R.string.passowrd_error));
+                    if (openEncryptFolder(context, lockFile, path, text, callback)) {
+                        if (fingerprintKey != null) {
+                            byte[] enctyptedKey = FingerHelper.encryptBytes2Byte(fingerprintKey, text.getBytes());
+                            cachedFolderKeys.add(path, enctyptedKey);
+                        }
                     }
                 }
             }
         });
         dialog.show();
+    }
+
+    private boolean openEncryptFolder(Context context, File lockFile, String path, String pass, OpenFolderCallback callback) {
+        try {
+            byte[] key = EncryptFolderUtils.decryptKey(pass, lockFile);
+            folderKey = new Pair<>(path, Utils.bytesToHEX(key));
+            callback.openFolder(path);
+            return true;
+        } catch (Exception e) {
+            e.printStackTrace();
+            ToastUtil.show(context, context.getString(R.string.passowrd_error));
+            return false;
+        }
     }
 
     public void deleteCache(String path) {
@@ -250,6 +300,90 @@ public class NoteFolderHelper {
             }
             items.addAll(notes);
             datas = items;
+        }
+    }
+
+    private static class CachedFolderKeys {
+        final List<CachedFolderKey> keys = new ArrayList<>();
+        final File file;
+
+        private CachedFolderKeys(File file) {
+            this.file = file;
+        }
+
+        void load() {
+            try {
+                String text = FileUtils.readFile(file, "utf-8");
+                JSONArray arrays = new JSONArray(text);
+                for (int i = arrays.length() - 1; i >= 0; i--) {
+                    JSONObject json = arrays.getJSONObject(i);
+                    CachedFolderKey key = new CachedFolderKey();
+                    key.path = json.getString("path");
+                    key.encryptedKey = Utils.hexToBytes(json.getString("key"));
+                    keys.add(key);
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+
+        void remove(String path) {
+            boolean needSave = false;
+            Iterator<CachedFolderKey> iter = keys.iterator();
+            while (iter.hasNext()) {
+                CachedFolderKey key = iter.next();
+                if (key.path.equals(path)) {
+                    iter.remove();
+                    needSave = true;
+                }
+            }
+            if (needSave) {
+                save();
+            }
+        }
+
+        void add(String path, byte[] key) {
+            remove(path);
+            keys.add(new CachedFolderKey(path, key));
+            save();
+        }
+
+        CachedFolderKey find(String path) {
+            for (CachedFolderKey key : keys) {
+                if (key.path.equals(path)) {
+                    return key;
+                }
+            }
+            return null;
+        }
+
+        void save() {
+            try {
+                JSONArray arrays = new JSONArray();
+                for (CachedFolderKey key : keys) {
+                    JSONObject json = new JSONObject();
+                    json.put("path", key.path);
+                    json.put("key", Utils.bytesToHEX(key.encryptedKey));
+                    arrays.put(json);
+                }
+                String text = arrays.toString();
+                FileUtils.write(file, text.getBytes("utf-8"));
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    private static class CachedFolderKey {
+        String path;
+        byte[] encryptedKey;
+
+        public CachedFolderKey(String path, byte[] encryptedKey) {
+            this.path = path;
+            this.encryptedKey = encryptedKey;
+        }
+
+        public CachedFolderKey() {
         }
     }
 }

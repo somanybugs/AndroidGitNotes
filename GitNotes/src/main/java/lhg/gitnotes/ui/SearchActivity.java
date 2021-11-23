@@ -1,17 +1,28 @@
 package lhg.gitnotes.ui;
 
+import android.content.Context;
+import android.content.Intent;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
+
 
 import androidx.appcompat.widget.SearchView;
 import androidx.appcompat.widget.Toolbar;
 
 import lhg.gitnotes.R;
 import lhg.gitnotes.app.AppBaseActivity;
+import lhg.gitnotes.git.GitConfig;
 
 public class SearchActivity extends AppBaseActivity  {
     private SearchView searchView;
+    private GitConfig gitConfig;
+
+    public static Intent makeIntent(Context context, GitConfig gitConfig) {
+        Intent intent = new Intent(context, SearchActivity.class);
+        intent.putExtra("gitConfig", gitConfig);
+        return intent;
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -20,6 +31,12 @@ public class SearchActivity extends AppBaseActivity  {
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         toolbar.setContentInsetStartWithNavigation(0);
+        showPrevArrowOnActionBar();
+        if (getIntent() == null) {
+            finish();
+            return;
+        }
+        gitConfig = (GitConfig) getIntent().getSerializableExtra("gitConfig");
     }
 
 
@@ -33,12 +50,13 @@ public class SearchActivity extends AppBaseActivity  {
     private void initActionSearch(Menu menu) {
         MenuItem searchItem = menu.findItem(R.id.action_search);
         searchView = (SearchView) searchItem.getActionView();
-        searchView.setIconified(true);
-        searchView.setIconifiedByDefault(true);
+//        searchView.setIconified(false);
+//        searchView.setIconifiedByDefault(false);
         searchView.onActionViewExpanded();
         searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
             @Override
             public boolean onQueryTextSubmit(String s) {
+                doSearch(s);
                 return true;
             }
             @Override
@@ -46,6 +64,11 @@ public class SearchActivity extends AppBaseActivity  {
                 return true;
             }
         });
+
+    }
+
+    private void doSearch(String s) {
+
     }
 
     @Override

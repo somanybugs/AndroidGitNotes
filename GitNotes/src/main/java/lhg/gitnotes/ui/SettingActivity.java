@@ -6,26 +6,46 @@ import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.CompoundButton;
 
 import androidx.appcompat.app.AlertDialog;
 
-import lhg.gitnotes.app.AppBaseActivity;
-import lhg.gitnotes.R;
-import lhg.gitnotes.utils.AlipayUtil;
-import lhg.gitnotes.ui.view.WeixinQrPayDialog;
+import java.util.ArrayList;
+import java.util.List;
 
 import lhg.common.utils.SettingUI;
 import lhg.common.utils.ToastUtil;
 import lhg.common.utils.Utils;
 import lhg.common.utils.ViewUtils;
-
-import java.util.ArrayList;
-import java.util.List;
+import lhg.gitnotes.R;
+import lhg.gitnotes.app.AppBaseActivity;
+import lhg.gitnotes.app.FingerHelper;
+import lhg.gitnotes.ui.view.WeixinQrPayDialog;
+import lhg.gitnotes.utils.AlipayUtil;
 
 
 public class SettingActivity extends AppBaseActivity {
 
     String qq = "976397296";
+
+    private CompoundButton.OnCheckedChangeListener fingerListener = new CompoundButton.OnCheckedChangeListener() {
+        @Override
+        public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+            FingerHelper.Entity entity = FingerHelper.Entity.get(getActivity());
+            if (isChecked) {
+                FingerHelper.Setup.enableFingerprintVerification(getActivity(), "开启加密文件夹指纹验证",
+                        () -> {
+                            buttonView.setOnCheckedChangeListener(null);
+                            buttonView.setChecked(false);
+                            buttonView.setOnCheckedChangeListener(this);
+                        },
+                        () -> { });
+            } else {
+                entity.reset();
+                entity.save(getActivity());
+            }
+        }
+    };
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -34,7 +54,10 @@ public class SettingActivity extends AppBaseActivity {
         setSupportActionBar(findViewById(R.id.toolbar));
         showPrevArrowOnActionBar();
 
+        FingerHelper.Entity entity = FingerHelper.Entity.get(this);
         List<View> itemViews = new ArrayList<>();
+        itemViews.add(SettingUI.section(this));
+        itemViews.add(SettingUI.switch1(this, "开启加密文件夹指纹验证", entity.isEnable(), fingerListener));
         itemViews.add(SettingUI.section(this));
         itemViews.add(SettingUI.click2H(this, "版本号", Utils.getAppVersionName(this), null));
         itemViews.add( SettingUI.click2H(this, "QQ交流群", qq, v -> {

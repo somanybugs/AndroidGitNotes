@@ -10,6 +10,7 @@ public class Paramters extends SimplePreference {
 
     static volatile Paramters sInstance;
 
+
     public static Paramters instance(Context context) {
         if (sInstance == null) {
             synchronized (Paramters.class) {

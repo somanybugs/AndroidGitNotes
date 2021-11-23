@@ -144,7 +144,7 @@ public class SelectFolderDialogFragment extends AppCompatDialogFragment implemen
     }
 
     private void openDir(String path) {
-        folderHelper.openFolder(getContext(), path, openFolderCallback);
+        folderHelper.openFolder(getActivity(), path, openFolderCallback);
     }
 
     private synchronized void doOpenDir(String folder) {
