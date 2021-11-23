@@ -100,21 +100,29 @@ public class NoteFolderHelper {
         CachedFolderKey cachedFolderKey = cachedFolderKeys.find(path);
         FingerHelper.Entity entity = FingerHelper.Entity.get(context);
         if (entity.isEnable() && activity instanceof FragmentActivity && fingerLoginHelper.init((FragmentActivity) activity)) {
-            fingerLoginHelper.show((fingerprintKey, error) -> {
-                boolean needInputKey = true;
-                if (fingerprintKey != null && cachedFolderKey != null) {
-                    byte[] plainKey = FingerHelper.decryptBytes2bytes(fingerprintKey, cachedFolderKey.encryptedKey);
-                    if (plainKey != null && plainKey.length > 0) {
-                        String plainKeyStr = new String(plainKey);
-                        if (!openEncryptFolder(context, lockFile, finalDirPath, plainKeyStr, callback)) {
-                            cachedFolderKeys.remove(finalDirPath);
-                        } else {
-                            needInputKey = false;
+            fingerLoginHelper.show(new FingerHelper.Login.Callback() {
+                @Override
+                public void onSuccess(byte[] fingerprintKey) {
+                    boolean needInputKey = true;
+                    if (fingerprintKey != null && cachedFolderKey != null) {
+                        byte[] plainKey = FingerHelper.decryptBytes2bytes(fingerprintKey, cachedFolderKey.encryptedKey);
+                        if (plainKey != null && plainKey.length > 0) {
+                            String plainKeyStr = new String(plainKey);
+                            if (!openEncryptFolder(context, lockFile, finalDirPath, plainKeyStr, callback)) {
+                                cachedFolderKeys.remove(finalDirPath);
+                            } else {
+                                needInputKey = false;
+                            }
                         }
                     }
+                    if (needInputKey) {
+                        inputKeyToOpenEncryptFolder(context, fingerprintKey, lockFile, finalDirPath, callback);
+                    }
                 }
-                if (needInputKey) {
-                    inputKeyToOpenEncryptFolder(context, fingerprintKey, lockFile, finalDirPath, callback);
+
+                @Override
+                public void onError(Throwable throwable) {
+                    inputKeyToOpenEncryptFolder(context, null, lockFile, finalDirPath, callback);
                 }
             });
         } else {

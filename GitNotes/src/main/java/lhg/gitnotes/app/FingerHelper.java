@@ -354,7 +354,7 @@ public class FingerHelper {
 
         public boolean show(Callback callback) {
             if (initError != null) {
-                callback.onFinish(null, initError);
+                callback.onError(initError);
                 return false;
             }
             final FingerHelper.Entity entity = FingerHelper.Entity.get(context);
@@ -364,7 +364,12 @@ public class FingerHelper {
                 @Override
                 public void onAuthenticationError(int errorCode, @NonNull CharSequence errString) {
                     super.onAuthenticationError(errorCode, errString);
-                    ToastUtil.show(context, "Authentication error: " + errString);
+                    if (errorCode == ERROR_NEGATIVE_BUTTON) {
+                        callback.onError(new UserCancelException());
+                    } else {
+                        callback.onError(new Error(String.valueOf(errString)));
+                        ToastUtil.show(context, "Authentication error: " + errString);
+                    }
                 }
 
                 @Override
@@ -380,7 +385,7 @@ public class FingerHelper {
                             return;
                         }
                         Log.i("TESTT", "指纹解密密码 " + Utils.bytesToHEX(pass));
-                        callback.onFinish(pass, null);
+                        callback.onSuccess(pass);
                     } catch (Exception e) {
                         e.printStackTrace();
                         showFingerErrorDialog();
@@ -409,13 +414,18 @@ public class FingerHelper {
             new AlertDialog.Builder(context)
                     .setCancelable(false)
                     .setTitle("指纹验证失败")
-                    .setNegativeButton("确定", null)
-                    .setOnDismissListener(dialog -> callback.onFinish(null, new Error("指纹验证失败")))
+                    .setNegativeButton(context.getText(android.R.string.ok), null)
+                    .setOnDismissListener(dialog -> callback.onError(new Error("指纹验证失败")))
                     .show();
         }
 
         public interface Callback {
-            void onFinish(byte[] key, Error error);
+            void onSuccess(byte[] key);
+            void onError(Throwable throwable);
+        }
+
+        public static class UserCancelException extends Error {
+
         }
 
 
