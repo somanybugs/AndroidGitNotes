@@ -16,7 +16,7 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 
 import lhg.gitnotes.R;
-import lhg.gitnotes.app.FingerHelper;
+import lhg.gitnotes.app.FingerprintHelper;
 import lhg.gitnotes.git.GitConfig;
 import lhg.gitnotes.utils.EncryptFolderUtils;
 import lhg.gitnotes.ui.view.NumberPasswordDialog;
@@ -36,7 +36,7 @@ public class NoteFolderHelper {
     private final GitConfig gitConfig;
     private final Stack<DatasHolder> folderStack = new Stack<>();
     Pair<String, String> folderKey;
-    FingerHelper.Login fingerLoginHelper = new FingerHelper.Login();
+    FingerprintHelper.Login fingerLoginHelper = new FingerprintHelper.Login();
     private final CachedFolderKeys cachedFolderKeys;
 
     public NoteFolderHelper(GitConfig gitConfig) {
@@ -94,40 +94,48 @@ public class NoteFolderHelper {
             return;
         }
 
-
         String finalDirPath = path;
-        Activity activity = Utils.getActivityFromContext(context);
-        CachedFolderKey cachedFolderKey = cachedFolderKeys.find(path);
-        FingerHelper.Entity entity = FingerHelper.Entity.get(context);
-        if (entity.isEnable() && activity instanceof FragmentActivity && fingerLoginHelper.init((FragmentActivity) activity)) {
-            fingerLoginHelper.show(new FingerHelper.Login.Callback() {
-                @Override
-                public void onSuccess(byte[] fingerprintKey) {
-                    boolean needInputKey = true;
-                    if (fingerprintKey != null && cachedFolderKey != null) {
-                        byte[] plainKey = FingerHelper.decryptBytes2bytes(fingerprintKey, cachedFolderKey.encryptedKey);
-                        if (plainKey != null && plainKey.length > 0) {
-                            String plainKeyStr = new String(plainKey);
-                            if (!openEncryptFolder(context, lockFile, finalDirPath, plainKeyStr, callback)) {
-                                cachedFolderKeys.remove(finalDirPath);
-                            } else {
-                                needInputKey = false;
-                            }
-                        }
-                    }
-                    if (needInputKey) {
-                        inputKeyToOpenEncryptFolder(context, fingerprintKey, lockFile, finalDirPath, callback);
-                    }
-                }
-
-                @Override
-                public void onError(Throwable throwable) {
-                    inputKeyToOpenEncryptFolder(context, null, lockFile, finalDirPath, callback);
-                }
-            });
-        } else {
+        if (!fingerprintToOpenEncryptFolder(context, lockFile, path, callback)) {
             inputKeyToOpenEncryptFolder(context, null, lockFile, finalDirPath, callback);
         }
+    }
+
+    private boolean fingerprintToOpenEncryptFolder(Context context, File lockFile, String path, OpenFolderCallback callback) {
+        Activity activity = Utils.getActivityFromContext(context);
+        if (activity == null || !(activity instanceof FragmentActivity)) {
+            return false;
+        }
+        if (!fingerLoginHelper.init((FragmentActivity) activity)) {
+            return false;
+        }
+
+        fingerLoginHelper.show(new FingerprintHelper.Login.Callback() {
+            @Override
+            public void onSuccess(byte[] fingerprintKey) {
+                boolean needInputKey = true;
+                CachedFolderKey cachedFolderKey = cachedFolderKeys.find(path);
+                if (fingerprintKey != null && cachedFolderKey != null) {
+                    byte[] plainKey = FingerprintHelper.decryptBytes2bytes(fingerprintKey, cachedFolderKey.encryptedKey);
+                    if (plainKey != null && plainKey.length > 0) {
+                        String plainKeyStr = new String(plainKey);
+                        if (!openEncryptFolder(context, lockFile, path, plainKeyStr, callback)) {
+                            cachedFolderKeys.remove(path);
+                        } else {
+                            needInputKey = false;
+                        }
+                    }
+                }
+                if (needInputKey) {
+                    inputKeyToOpenEncryptFolder(context, fingerprintKey, lockFile, path, callback);
+                }
+            }
+
+            @Override
+            public void onError(Throwable throwable) {
+                inputKeyToOpenEncryptFolder(context, null, lockFile, path, callback);
+            }
+        });
+        return true;
     }
 
     private void inputKeyToOpenEncryptFolder(Context context, byte[] fingerprintKey, File lockFile, String path, OpenFolderCallback callback) {
@@ -138,7 +146,7 @@ public class NoteFolderHelper {
                 if (!TextUtils.isEmpty(text)) {
                     if (openEncryptFolder(context, lockFile, path, text, callback)) {
                         if (fingerprintKey != null) {
-                            byte[] enctyptedKey = FingerHelper.encryptBytes2Byte(fingerprintKey, text.getBytes());
+                            byte[] enctyptedKey = FingerprintHelper.encryptBytes2Byte(fingerprintKey, text.getBytes());
                             cachedFolderKeys.add(path, enctyptedKey);
                         }
                     }

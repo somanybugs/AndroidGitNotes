@@ -19,7 +19,7 @@ import lhg.common.utils.Utils;
 import lhg.common.utils.ViewUtils;
 import lhg.gitnotes.R;
 import lhg.gitnotes.app.AppBaseActivity;
-import lhg.gitnotes.app.FingerHelper;
+import lhg.gitnotes.app.FingerprintHelper;
 import lhg.gitnotes.ui.view.WeixinQrPayDialog;
 import lhg.gitnotes.utils.AlipayUtil;
 
@@ -31,11 +31,11 @@ public class SettingActivity extends AppBaseActivity {
     private CompoundButton.OnCheckedChangeListener fingerListener = new CompoundButton.OnCheckedChangeListener() {
         @Override
         public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-            FingerHelper.Entity entity = FingerHelper.Entity.get(getActivity());
+            FingerprintHelper.Entity entity = FingerprintHelper.Entity.get(getActivity());
             entity.reset();
             entity.save(getActivity());
             if (isChecked) {
-                FingerHelper.Setup.enableFingerprintVerification(getActivity(), "开启加密文件夹指纹验证",
+                FingerprintHelper.Setup.enableFingerprintVerification(getActivity(), "开启加密文件夹指纹验证",
                         () -> {
                             buttonView.setOnCheckedChangeListener(null);
                             buttonView.setChecked(false);
@@ -54,7 +54,7 @@ public class SettingActivity extends AppBaseActivity {
         setSupportActionBar(findViewById(R.id.toolbar));
         showPrevArrowOnActionBar();
 
-        FingerHelper.Entity entity = FingerHelper.Entity.get(this);
+        FingerprintHelper.Entity entity = FingerprintHelper.Entity.get(this);
         List<View> itemViews = new ArrayList<>();
         itemViews.add(SettingUI.section(this));
         itemViews.add(SettingUI.switch1(this, "开启加密文件夹指纹验证", entity.isEnable(), fingerListener));

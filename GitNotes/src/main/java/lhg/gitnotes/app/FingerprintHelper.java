@@ -47,7 +47,7 @@ import lhg.common.utils.ToastUtil;
 import lhg.common.utils.Utils;
 import lhg.gitnotes.R;
 
-public class FingerHelper {
+public class FingerprintHelper {
 
     private static final String KEY_ALGORITHM = "AES";
     private static final String CIPHER_ALGORITHM = "AES/ECB/PKCS7Padding";
@@ -250,10 +250,10 @@ public class FingerHelper {
 
         public static boolean enableFingerprintVerification(FragmentActivity context, String message, Runnable fail, Runnable succ) {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                FingerHelper.generateSecretKey(context);
+                FingerprintHelper.generateSecretKey(context);
             }
 
-            Cipher cipher = FingerHelper.getCipher(context, Cipher.ENCRYPT_MODE, null);
+            Cipher cipher = FingerprintHelper.getCipher(context, Cipher.ENCRYPT_MODE, null);
             if (cipher == null) {
                 if (fail != null) {
                     fail.run();
@@ -278,13 +278,12 @@ public class FingerHelper {
                             super.onAuthenticationSucceeded(result);
                             try {
                                 Cipher cipher = result.getCryptoObject().getCipher();
-                                FingerHelper.Entity entity = FingerHelper.Entity.get(context);
+                                FingerprintHelper.Entity entity = FingerprintHelper.Entity.get(context);
                                 byte[] plainPass = Utils.randomBytes(32);
-                                Log.i("TESTT", "混淆密码 "+ plainPass);
                                 entity.encryptedPassword = cipher.doFinal(plainPass);
                                 entity.iv = cipher.getIV();
                                 entity.random = Utils.randomBytes(128);
-                                entity.signature = FingerHelper.encryptBytes2Byte(plainPass, entity.random);
+                                entity.signature = FingerprintHelper.encryptBytes2Byte(plainPass, entity.random);
                                 entity.save(context);
                                 if (succ != null) {
                                     succ.run();
@@ -333,8 +332,8 @@ public class FingerHelper {
                 return false;
             }
 
-            FingerHelper.Entity entity = FingerHelper.Entity.get(context);
-            if (entity.encryptedPassword == null || entity.encryptedPassword.length == 0) {
+            FingerprintHelper.Entity entity = FingerprintHelper.Entity.get(context);
+            if (!entity.isEnable()) {
                 initError = (new Error("指纹验证密码为空"));
                 return false;
             }
@@ -357,7 +356,7 @@ public class FingerHelper {
                 callback.onError(initError);
                 return false;
             }
-            final FingerHelper.Entity entity = FingerHelper.Entity.get(context);
+            final FingerprintHelper.Entity entity = FingerprintHelper.Entity.get(context);
             this.callback = callback;
             Executor executor = ContextCompat.getMainExecutor(context);
             biometricPrompt = new BiometricPrompt(context, executor, new BiometricPrompt.AuthenticationCallback() {
@@ -367,8 +366,7 @@ public class FingerHelper {
                     if (errorCode == ERROR_NEGATIVE_BUTTON) {
                         callback.onError(new UserCancelException());
                     } else {
-                        callback.onError(new Error(String.valueOf(errString)));
-                        ToastUtil.show(context, "Authentication error: " + errString);
+                        showFingerErrorDialog(new Error(String.valueOf(errString)));
                     }
                 }
 
@@ -377,32 +375,29 @@ public class FingerHelper {
                     super.onAuthenticationSucceeded(result);
                     try {
                         byte[] pass = result.getCryptoObject().getCipher().doFinal(entity.encryptedPassword);
-                        byte[] ret = FingerHelper.decryptBytes2bytes(pass, entity.signature);
+                        byte[] ret = FingerprintHelper.decryptBytes2bytes(pass, entity.signature);
                         if (!ByteUtils.equals(entity.random, ret)) {
                             entity.reset();
                             entity.save(context);
-                            showFingerErrorDialog();
+                            showFingerErrorDialog(new Error("Fingerprint decrypt error"));
                             return;
                         }
-                        Log.i("TESTT", "指纹解密密码 " + Utils.bytesToHEX(pass));
                         callback.onSuccess(pass);
                     } catch (Exception e) {
                         e.printStackTrace();
-                        showFingerErrorDialog();
+                        showFingerErrorDialog(e);
                     }
-//                ToastUtil.show(context, "Authentication succeeded!");
                 }
 
                 @Override
                 public void onAuthenticationFailed() {
                     super.onAuthenticationFailed();
-//                ToastUtil.show(context, "Authentication failed");
                 }
             });
 
             BiometricPrompt.PromptInfo promptInfo = new BiometricPrompt.PromptInfo.Builder()
                     .setTitle(Utils.getApplicationName(context))
-                    .setSubtitle("指纹验证")
+                    .setSubtitle("Please verify the fingerprint")
                     .setNegativeButtonText("使用密码")
                     .build();
             biometricPrompt.authenticate(promptInfo, new BiometricPrompt.CryptoObject(cipher));
@@ -410,12 +405,12 @@ public class FingerHelper {
         }
 
 
-        private void showFingerErrorDialog() {
+        private void showFingerErrorDialog(Throwable error) {
             new AlertDialog.Builder(context)
                     .setCancelable(false)
-                    .setTitle("指纹验证失败")
+                    .setTitle(error.getLocalizedMessage())
                     .setNegativeButton(context.getText(android.R.string.ok), null)
-                    .setOnDismissListener(dialog -> callback.onError(new Error("指纹验证失败")))
+                    .setOnDismissListener(dialog -> callback.onError(error))
                     .show();
         }
 
