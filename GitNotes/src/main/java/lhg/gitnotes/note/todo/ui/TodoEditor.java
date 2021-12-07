@@ -10,33 +10,35 @@ import android.view.ViewGroup;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.ConcatAdapter;
 import androidx.recyclerview.widget.DividerItemDecoration;
+import androidx.recyclerview.widget.ItemTouchHelper;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
-import lhg.gitnotes.R;
-import lhg.gitnotes.git.GitConfig;
-import lhg.gitnotes.note.todo.TodoEntity;
-import lhg.gitnotes.ui.FileEditor;
-import lhg.common.utils.ColorUtils;
-import lhg.common.view.InputDialog;
 
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.UUID;
 
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers;
 import io.reactivex.rxjava3.core.Single;
 import io.reactivex.rxjava3.schedulers.Schedulers;
+import lhg.common.utils.ColorUtils;
+import lhg.common.view.InputDialog;
+import lhg.gitnotes.R;
+import lhg.gitnotes.git.GitConfig;
+import lhg.gitnotes.note.todo.TodoEntity;
+import lhg.gitnotes.ui.FileEditor;
 
 public class TodoEditor extends FileEditor {
 
     RecyclerView recyclerView;
     TodoItemAdapter adapter;
     Gson gson;
-    ArrayList<TodoEntity> datas;
+    final ArrayList<TodoEntity> datas = new ArrayList<>();
     boolean hasChanged = false;
     int accentColor;
 
@@ -71,14 +73,12 @@ public class TodoEditor extends FileEditor {
             }).subscribeOn(Schedulers.io())
                     .observeOn(AndroidSchedulers.mainThread())
                     .subscribe(datas -> {
-                        this.datas = datas;
-                        adapter.setItems(datas);
+                        this.datas.addAll(datas);
+                        adapter.setItems(this.datas);
                     }, throwable -> {
-                        this.datas = new ArrayList<>();
                         throwable.printStackTrace();
                     });
         } else {
-            this.datas = new ArrayList<>();
             adapter.setItems(datas);
         }
         return true;
@@ -91,6 +91,9 @@ public class TodoEditor extends FileEditor {
             @Override
             public VH onCreateViewHolder(@NonNull @NotNull ViewGroup parent, int viewType) {
                 return new VH(parent){
+                    {
+                        itemView.setOnClickListener(v -> gotoEditItem(item, false));
+                    }
                     @Override
                     protected void onChecked(TodoEntity item) {
                         super.onChecked(item);
@@ -102,8 +105,9 @@ public class TodoEditor extends FileEditor {
                     protected void onDelete(TodoEntity item) {
                         super.onDelete(item);
                         hasChanged = true;
+                        adapter.notifyItemRemoved(getBindingAdapterPosition());
                         datas.remove(item);
-                        adapter.notifyDataSetChanged();
+                        saveLocalFile();
                     }
                 };
             }
@@ -159,7 +163,6 @@ public class TodoEditor extends FileEditor {
 
     private void initListView() {
         adapter = createAdapter();
-        adapter.setOnItemClickListener((adapter, data, holder) -> gotoEditItem(data, false));
         ConcatAdapter concatAdapter = new ConcatAdapter(new HeaderAdapter(true), adapter, new HeaderAdapter(false));
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
         Drawable divider = getResources().getDrawable(R.drawable.divider_password_recycler);
@@ -167,6 +170,10 @@ public class TodoEditor extends FileEditor {
         dividerItem.setDrawable(divider);
         recyclerView.addItemDecoration(dividerItem);
         recyclerView.setAdapter(concatAdapter);
+
+        QuickReplyItemTouchCallback callback = new QuickReplyItemTouchCallback();
+        ItemTouchHelper itemTouchHelper = new ItemTouchHelper(callback);
+        itemTouchHelper.attachToRecyclerView(recyclerView);
     }
 
     private class HeaderAdapter extends RecyclerView.Adapter {
@@ -197,5 +204,32 @@ public class TodoEditor extends FileEditor {
         }
     }
 
+
+    private class QuickReplyItemTouchCallback extends ItemTouchHelper.SimpleCallback {
+
+        public QuickReplyItemTouchCallback() {
+            super(ItemTouchHelper.UP | ItemTouchHelper.DOWN, 0);
+        }
+
+        @Override
+        public boolean isItemViewSwipeEnabled() { //是否启用左右滑动
+            return false;
+        }
+
+        @Override
+        public boolean onMove(@NonNull RecyclerView recyclerView, @NonNull RecyclerView.ViewHolder viewHolder, @NonNull RecyclerView.ViewHolder target) {
+            int from = viewHolder.getBindingAdapterPosition();
+            int to = target.getBindingAdapterPosition();
+            Collections.swap(datas, from, to);//更换我们数据List的位置
+            adapter.notifyItemMoved(from, to);
+            saveLocalFile();
+            return true;
+        }
+
+        @Override
+        public void onSwiped(@NonNull RecyclerView.ViewHolder viewHolder, int direction) {
+
+        }
+    }
 
 }

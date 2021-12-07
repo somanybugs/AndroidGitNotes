@@ -8,12 +8,26 @@
     <include layout="@layout/toolbar" />
 
 
-    <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/recyclerView"
-        android:layout_width="match_parent"
-        android:layout_height="0dip"
+    <FrameLayout
         android:layout_weight="1"
-        android:background="@color/white" />
+        android:layout_width="match_parent"
+        android:layout_height="0dip">
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/recyclerView"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent" />
+
+        <com.google.android.material.floatingactionbutton.FloatingActionButton
+            android:id="@+id/btnAdd"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="bottom|right"
+            android:layout_marginRight="@dimen/activity_horizontal_margin"
+            android:layout_marginBottom="@dimen/activity_horizontal_margin"
+            android:padding="16dp"
+            android:src="@drawable/baseline_add_white_36" />
+    </FrameLayout>
 
     <View
         android:background="@color/lightgray"

@@ -10,64 +10,19 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
-import lhg.common.adapter.RecyclerClickAdapter;
 import lhg.common.utils.DrawableUtils;
 import lhg.gitnotes.R;
 import lhg.gitnotes.note.bill.BillEntity;
 
-public class BillItemAdapter extends RecyclerClickAdapter<BillEntity, BillItemAdapter.VH> {
+public class BillItemAdapter extends RecyclerView.Adapter<BillItemAdapter.VH> {
 
     List<BillEntity> items;
-    final List<BillEntity> selectedItems = new ArrayList<>();
-    boolean isEditing = false;
-    private OnSelectListsner onSelectListsner;
 
     public void setItems(List<BillEntity> items) {
         this.items = items;
         notifyDataSetChanged();
-    }
-
-    public void setSelecting(boolean isSelecting, List<BillEntity> selectedItems) {
-        this.isEditing = isSelecting;
-        this.selectedItems.clear();
-        if (selectedItems != null) {
-            this.selectedItems.addAll(selectedItems);
-        }
-        notifyDataSetChanged();
-        postSelectChanged();
-    }
-
-    public void selectNone() {
-        if (this.selectedItems.isEmpty()) {
-            return;
-        }
-        this.selectedItems.clear();
-        notifyDataSetChanged();
-        postSelectChanged();
-    }
-
-    public void selectAll() {
-        this.selectedItems.clear();
-        if (items != null) {
-            selectedItems.addAll(items);
-        }
-        notifyDataSetChanged();
-        postSelectChanged();
-    }
-
-    public boolean isSelectAll() {
-        return selectedItems.size() == getItemCount();
-    }
-    public void setOnSelectListsner(OnSelectListsner onSelectListsner) {
-        this.onSelectListsner = onSelectListsner;
-    }
-
-    public interface OnSelectListsner {
-        void onChanged(BillItemAdapter adapter);
     }
 
     @Override
@@ -75,7 +30,6 @@ public class BillItemAdapter extends RecyclerClickAdapter<BillEntity, BillItemAd
         return items == null ? 0 : items.size();
     }
 
-    @Override
     public BillEntity getItem(int position) {
         return items.get(position);
     }
@@ -89,22 +43,10 @@ public class BillItemAdapter extends RecyclerClickAdapter<BillEntity, BillItemAd
     @Override
     public void onBindViewHolder(@NonNull VH holder, int position) {
         BillEntity item = getItem(position);
-        holder.update(item, isEditing, isEditing ? findItem(item, selectedItems) >= 0 : false);
+        holder.update(item);
     }
 
-    @Override
-    protected void onItemClick(int position, VH holder) {
-        if (isEditing) {
-            BillEntity item = getItem(position);
-            if (!selectedItems.remove(item)) {
-                selectedItems.add(item);
-            }
-            notifyItemChanged(position);
-            postSelectChanged();
-            return;
-        }
-        super.onItemClick(position, holder);
-    }
+
 
     @Override
     public long getItemId(int position) {
@@ -115,17 +57,9 @@ public class BillItemAdapter extends RecyclerClickAdapter<BillEntity, BillItemAd
         return selectedItems.indexOf(p);
     }
 
-
-    private void postSelectChanged() {
-        if (onSelectListsner != null) {
-            onSelectListsner.onChanged(this);
-        }
-    }
-
     public static class VH extends RecyclerView.ViewHolder {
 
         BillEntity item;
-        StateListDrawable itemDrawableInSelecting;
         StateListDrawable itemDrawable;
         View ivClose;
         TextView tvName;
@@ -135,12 +69,12 @@ public class BillItemAdapter extends RecyclerClickAdapter<BillEntity, BillItemAd
         public VH(@NonNull View itemView) {
             super(itemView);
             itemDrawable = DrawableUtils.listItemBackgroundPrimary(itemView.getContext());
-            itemDrawableInSelecting = DrawableUtils.clone(itemDrawable, Arrays.asList(new int[]{android.R.attr.state_pressed}));
             tvMoney = itemView.findViewById(R.id.tvMoney);
             ivClose = itemView.findViewById(R.id.ivClose);
             tvName = itemView.findViewById(R.id.tvName);
             tvTime = itemView.findViewById(R.id.tvTime);
             ivClose.setOnClickListener(v -> delete(item));
+            itemView.setBackground(itemDrawable);
         }
 
         private void delete(BillEntity item) {
@@ -160,13 +94,15 @@ public class BillItemAdapter extends RecyclerClickAdapter<BillEntity, BillItemAd
             this(LayoutInflater.from(parent.getContext()).inflate(R.layout.item_bill, parent, false));
         }
 
-        public void update(BillEntity item, boolean isEditing, boolean isSelected) {
+        public void update(BillEntity item) {
             this.item = item;
-            itemView.setBackground(isEditing ? itemDrawableInSelecting : itemDrawable);
-            itemView.setSelected(isEditing && isSelected);
             tvName.setText(item.name);
             tvTime.setText(item.time);
             tvMoney.setText(item.money);
+        }
+
+        public BillEntity getItem() {
+            return item;
         }
     }
 

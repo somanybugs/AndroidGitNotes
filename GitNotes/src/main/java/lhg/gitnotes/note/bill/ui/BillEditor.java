@@ -4,15 +4,14 @@ import android.content.Context;
 import android.content.Intent;
 import android.graphics.drawable.Drawable;
 import android.text.TextUtils;
-import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
-import androidx.recyclerview.widget.ConcatAdapter;
 import androidx.recyclerview.widget.DividerItemDecoration;
+import androidx.recyclerview.widget.ItemTouchHelper;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -24,6 +23,7 @@ import org.jetbrains.annotations.NotNull;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
 import java.util.UUID;
 
@@ -42,7 +42,7 @@ public class BillEditor extends FileEditor {
     RecyclerView recyclerView;
     BillItemAdapter adapter;
     Gson gson;
-    ArrayList<BillEntity> datas;
+    final ArrayList<BillEntity> datas = new ArrayList<>();
     boolean hasChanged = false;
     int accentColor;
     TextView tvTotal;
@@ -68,6 +68,7 @@ public class BillEditor extends FileEditor {
         setTitleAndSubtitle();
         recyclerView = findViewById(R.id.recyclerView);
         tvTotal = findViewById(R.id.tvTotal);
+        findViewById(R.id.btnAdd).setOnClickListener(v -> gotoEditItem(null, true));
 
         initListView();
 
@@ -79,15 +80,13 @@ public class BillEditor extends FileEditor {
             }).subscribeOn(Schedulers.io())
                     .observeOn(AndroidSchedulers.mainThread())
                     .subscribe(datas -> {
-                        this.datas = datas;
-                        adapter.setItems(datas);
+                        this.datas.addAll(datas);
+                        adapter.setItems(this.datas);
                         updateTotal();
                     }, throwable -> {
-                        this.datas = new ArrayList<>();
                         throwable.printStackTrace();
                     });
         } else {
-            this.datas = new ArrayList<>();
             adapter.setItems(datas);
             updateTotal();
         }
@@ -101,12 +100,16 @@ public class BillEditor extends FileEditor {
             @Override
             public VH onCreateViewHolder(@NonNull @NotNull ViewGroup parent, int viewType) {
                 return new VH(parent){
+                    {
+                        itemView.setOnClickListener(v -> gotoEditItem(item, false));
+                    }
                     @Override
                     protected void onDelete(BillEntity item) {
                         super.onDelete(item);
                         hasChanged = true;
+                        adapter.notifyItemRemoved(getBindingAdapterPosition());
                         datas.remove(item);
-                        adapter.notifyDataSetChanged();
+                        saveLocalFile();
                         updateTotal();
                     }
                 };
@@ -210,43 +213,44 @@ public class BillEditor extends FileEditor {
 
     private void initListView() {
         adapter = createAdapter();
-        adapter.setOnItemClickListener((adapter, data, holder) -> gotoEditItem(data, false));
-        ConcatAdapter concatAdapter = new ConcatAdapter(new HeaderAdapter(true), adapter, new HeaderAdapter(false));
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
         Drawable divider = getResources().getDrawable(R.drawable.divider_password_recycler);
         DividerItemDecoration dividerItem = new DividerItemDecoration(this, LinearLayoutManager.VERTICAL);
         dividerItem.setDrawable(divider);
         recyclerView.addItemDecoration(dividerItem);
-        recyclerView.setAdapter(concatAdapter);
+        recyclerView.setAdapter(adapter);
+
+        QuickReplyItemTouchCallback callback = new QuickReplyItemTouchCallback();
+        ItemTouchHelper itemTouchHelper = new ItemTouchHelper(callback);
+        itemTouchHelper.attachToRecyclerView(recyclerView);
     }
 
-    private class HeaderAdapter extends RecyclerView.Adapter {
 
-        boolean top;
+    private class QuickReplyItemTouchCallback extends ItemTouchHelper.SimpleCallback {
 
-        public HeaderAdapter(boolean top) {
-            this.top = top;
-        }
-
-        @NonNull
-        @NotNull
-        @Override
-        public RecyclerView.ViewHolder onCreateViewHolder(@NonNull @NotNull ViewGroup parent, int viewType) {
-            RecyclerView.ViewHolder vh = new RecyclerView.ViewHolder(LayoutInflater.from(parent.getContext()).inflate(R.layout.item_todo_add, parent, false)) {
-            };
-            vh.itemView.setOnClickListener(v -> gotoEditItem(null, top));
-            return vh;
+        public QuickReplyItemTouchCallback() {
+            super(ItemTouchHelper.UP | ItemTouchHelper.DOWN, 0);
         }
 
         @Override
-        public void onBindViewHolder(@NonNull @NotNull RecyclerView.ViewHolder holder, int position) {
+        public boolean isItemViewSwipeEnabled() { //是否启用左右滑动
+            return false;
         }
 
         @Override
-        public int getItemCount() {
-            return 1;
+        public boolean onMove(@NonNull RecyclerView recyclerView, @NonNull RecyclerView.ViewHolder viewHolder, @NonNull RecyclerView.ViewHolder target) {
+            int from = viewHolder.getBindingAdapterPosition();
+            int to = target.getBindingAdapterPosition();
+            Collections.swap(datas, from, to);//更换我们数据List的位置
+            adapter.notifyItemMoved(from, to);
+            saveLocalFile();
+            return true;
+        }
+
+        @Override
+        public void onSwiped(@NonNull RecyclerView.ViewHolder viewHolder, int direction) {
+
         }
     }
-
 
 }
