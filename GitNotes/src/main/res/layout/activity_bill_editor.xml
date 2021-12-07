@@ -41,6 +41,7 @@
             android:id="@+id/ivAdd"
             android:theme="@style/RippleWhite30"
             android:padding="8dp"
+            android:layout_marginRight="8dp"
             android:src="@drawable/outline_add_black_24"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"/>
