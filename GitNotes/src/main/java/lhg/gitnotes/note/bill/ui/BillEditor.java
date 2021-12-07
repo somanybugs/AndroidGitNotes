@@ -68,7 +68,7 @@ public class BillEditor extends FileEditor {
         setTitleAndSubtitle();
         recyclerView = findViewById(R.id.recyclerView);
         tvTotal = findViewById(R.id.tvTotal);
-        findViewById(R.id.btnAdd).setOnClickListener(v -> gotoEditItem(null, true));
+        findViewById(R.id.ivAdd).setOnClickListener(v -> gotoEditItem(null, true));
 
         initListView();
 
