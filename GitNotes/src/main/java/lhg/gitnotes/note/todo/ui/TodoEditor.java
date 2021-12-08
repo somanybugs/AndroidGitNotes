@@ -99,13 +99,11 @@ public class TodoEditor extends FileEditor {
                     protected void onChecked(TodoEntity item) {
                         super.onChecked(item);
                         saveLocalFile();
-                        hasChanged = true;
                     }
 
                     @Override
                     protected void onDelete(TodoEntity item) {
                         super.onDelete(item);
-                        hasChanged = true;
                         adapter.notifyItemRemoved(getBindingAdapterPosition());
                         datas.remove(item);
                         saveLocalFile();
@@ -155,7 +153,6 @@ public class TodoEditor extends FileEditor {
                     datas.add(top ? 0 : datas.size(), finalP);
                     adapter.notifyItemInserted(top ? 0 : datas.size());
                 }
-                hasChanged = true;
                 saveLocalFile();
             }
         });
@@ -210,5 +207,9 @@ public class TodoEditor extends FileEditor {
         }
     }
 
-
+    @Override
+    protected void saveLocalFile() {
+        hasChanged = true;
+        super.saveLocalFile();
+    }
 }

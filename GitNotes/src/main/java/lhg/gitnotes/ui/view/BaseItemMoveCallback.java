@@ -5,10 +5,9 @@ import android.graphics.Canvas;
 import android.graphics.Paint;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.recyclerview.widget.ItemTouchHelper;
 import androidx.recyclerview.widget.RecyclerView;
-
-import lhg.common.utils.ColorUtils;
 
 public abstract class BaseItemMoveCallback extends ItemTouchHelper.SimpleCallback {
 
@@ -16,7 +15,7 @@ public abstract class BaseItemMoveCallback extends ItemTouchHelper.SimpleCallbac
 
     public BaseItemMoveCallback(Context context) {
         super(ItemTouchHelper.UP | ItemTouchHelper.DOWN, 0);
-        mPaint.setColor(ColorUtils.getPrimaryColor(context));
+        mPaint.setColor(0xaaaaaaaa);
         mPaint.setStyle(Paint.Style.STROKE);
     }
 
@@ -45,7 +44,14 @@ public abstract class BaseItemMoveCallback extends ItemTouchHelper.SimpleCallbac
         super.onChildDrawOver(c, recyclerView, viewHolder, dX, dY, actionState, isCurrentlyActive);
         if (dX != 0 && dY != 0 || isCurrentlyActive) {
             //长按拖拽时底部绘制一个虚线矩形
-//            c.drawRect(viewHolder.itemView.getLeft(),viewHolder.itemView.getTop(),viewHolder.itemView.getRight(),viewHolder.itemView.getBottom(),mPaint);
+            c.drawRect(viewHolder.itemView.getLeft(),viewHolder.itemView.getTop(),viewHolder.itemView.getRight(),viewHolder.itemView.getBottom(),mPaint);
+        }
+    }
+
+    @Override
+    public void onSelectedChanged(@Nullable RecyclerView.ViewHolder viewHolder, int actionState) {
+        if (viewHolder != null) {
+            viewHolder.itemView.setSelected(actionState == ItemTouchHelper.ACTION_STATE_DRAG);
         }
     }
 }

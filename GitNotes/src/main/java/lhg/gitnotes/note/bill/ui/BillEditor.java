@@ -109,7 +109,6 @@ public class BillEditor extends FileEditor {
                     @Override
                     protected void onDelete(BillEntity item) {
                         super.onDelete(item);
-                        hasChanged = true;
                         adapter.notifyItemRemoved(getBindingAdapterPosition());
                         datas.remove(item);
                         saveLocalFile();
@@ -182,7 +181,6 @@ public class BillEditor extends FileEditor {
                         datas.add(top ? 0 : datas.size(), finalP);
                         adapter.notifyItemInserted(top ? 0 : datas.size());
                     }
-                    hasChanged = true;
                     saveLocalFile();
                     updateTotal();
                 }).setNegativeButton(android.R.string.cancel, null)
@@ -235,4 +233,9 @@ public class BillEditor extends FileEditor {
     }
 
 
+    @Override
+    protected void saveLocalFile() {
+        hasChanged = true;
+        super.saveLocalFile();
+    }
 }

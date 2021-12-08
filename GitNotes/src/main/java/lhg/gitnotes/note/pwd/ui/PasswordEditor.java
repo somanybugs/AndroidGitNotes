@@ -36,7 +36,7 @@ public class PasswordEditor extends FileEditor {
     RecyclerView recyclerView;
     PasswordItemAdapter adapter;
     Gson gson;
-    ArrayList<PasswordEntity> datas;
+    final ArrayList<PasswordEntity> datas = new ArrayList<>();
     boolean hasChanged = false;
     private ActionMode selectActionMode;
     int accentColor;
@@ -75,14 +75,10 @@ public class PasswordEditor extends FileEditor {
             }).subscribeOn(Schedulers.io())
                     .observeOn(AndroidSchedulers.mainThread())
                     .subscribe(datas -> {
-                        this.datas = datas;
-                        adapter.setItems(datas);
-                    }, throwable -> {
-                        this.datas = new ArrayList<>();
-                        throwable.printStackTrace();
-                    });
+                        this.datas.addAll(datas);
+                        adapter.setItems(this.datas);
+                    }, throwable -> throwable.printStackTrace());
         } else {
-            this.datas = new ArrayList<>();
             adapter.setItems(datas);
         }
         return true;
@@ -129,7 +125,6 @@ public class PasswordEditor extends FileEditor {
                     datas.add(0, p);
                     adapter.notifyItemInserted(0);
                 }
-                hasChanged = true;
                 saveLocalFile();
             }
         }
@@ -230,7 +225,6 @@ public class PasswordEditor extends FileEditor {
     }
 
     private void deleteItems(List<PasswordEntity> items) {
-        hasChanged = true;
         datas.removeAll(items);
         saveLocalFile();
         adapter.notifyDataSetChanged();
@@ -254,4 +248,11 @@ public class PasswordEditor extends FileEditor {
     }
 
     /////////////////////////////////select mode//////////////////////////
+
+
+    @Override
+    protected void saveLocalFile() {
+        hasChanged = true;
+        super.saveLocalFile();
+    }
 }
