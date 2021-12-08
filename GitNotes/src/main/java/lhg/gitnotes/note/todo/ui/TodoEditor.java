@@ -32,6 +32,7 @@ import lhg.gitnotes.R;
 import lhg.gitnotes.git.GitConfig;
 import lhg.gitnotes.note.todo.TodoEntity;
 import lhg.gitnotes.ui.FileEditor;
+import lhg.gitnotes.ui.view.BaseItemMoveCallback;
 
 public class TodoEditor extends FileEditor {
 
@@ -171,9 +172,14 @@ public class TodoEditor extends FileEditor {
         recyclerView.addItemDecoration(dividerItem);
         recyclerView.setAdapter(concatAdapter);
 
-        QuickReplyItemTouchCallback callback = new QuickReplyItemTouchCallback();
-        ItemTouchHelper itemTouchHelper = new ItemTouchHelper(callback);
-        itemTouchHelper.attachToRecyclerView(recyclerView);
+        new ItemTouchHelper(new BaseItemMoveCallback(getActivity()) {
+            @Override
+            protected void onItemMoved(int from, int to) {
+                Collections.swap(datas, from, to);//更换我们数据List的位置
+                adapter.notifyItemMoved(from, to);
+                saveLocalFile();
+            }
+        }).attachToRecyclerView(recyclerView);
     }
 
     private class HeaderAdapter extends RecyclerView.Adapter {
@@ -204,32 +210,5 @@ public class TodoEditor extends FileEditor {
         }
     }
 
-
-    private class QuickReplyItemTouchCallback extends ItemTouchHelper.SimpleCallback {
-
-        public QuickReplyItemTouchCallback() {
-            super(ItemTouchHelper.UP | ItemTouchHelper.DOWN, 0);
-        }
-
-        @Override
-        public boolean isItemViewSwipeEnabled() { //是否启用左右滑动
-            return false;
-        }
-
-        @Override
-        public boolean onMove(@NonNull RecyclerView recyclerView, @NonNull RecyclerView.ViewHolder viewHolder, @NonNull RecyclerView.ViewHolder target) {
-            int from = viewHolder.getBindingAdapterPosition();
-            int to = target.getBindingAdapterPosition();
-            Collections.swap(datas, from, to);//更换我们数据List的位置
-            adapter.notifyItemMoved(from, to);
-            saveLocalFile();
-            return true;
-        }
-
-        @Override
-        public void onSwiped(@NonNull RecyclerView.ViewHolder viewHolder, int direction) {
-
-        }
-    }
 
 }

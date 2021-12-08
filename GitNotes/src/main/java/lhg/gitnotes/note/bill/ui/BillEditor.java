@@ -36,6 +36,7 @@ import lhg.gitnotes.R;
 import lhg.gitnotes.git.GitConfig;
 import lhg.gitnotes.note.bill.BillEntity;
 import lhg.gitnotes.ui.FileEditor;
+import lhg.gitnotes.ui.view.BaseItemMoveCallback;
 
 public class BillEditor extends FileEditor {
 
@@ -75,7 +76,8 @@ public class BillEditor extends FileEditor {
         if (!isNewFile) {
             Single.fromCallable(() -> {
                 String text = readFileText();
-                ArrayList<BillEntity> datas = gson.fromJson(text, new TypeToken<ArrayList<BillEntity>>(){}.getType());
+                ArrayList<BillEntity> datas = gson.fromJson(text, new TypeToken<ArrayList<BillEntity>>() {
+                }.getType());
                 return datas;
             }).subscribeOn(Schedulers.io())
                     .observeOn(AndroidSchedulers.mainThread())
@@ -94,15 +96,16 @@ public class BillEditor extends FileEditor {
     }
 
     protected BillItemAdapter createAdapter() {
-        return new BillItemAdapter(){
+        return new BillItemAdapter() {
             @NonNull
             @NotNull
             @Override
             public VH onCreateViewHolder(@NonNull @NotNull ViewGroup parent, int viewType) {
-                return new VH(parent){
+                return new VH(parent) {
                     {
                         itemView.setOnClickListener(v -> gotoEditItem(item, false));
                     }
+
                     @Override
                     protected void onDelete(BillEntity item) {
                         super.onDelete(item);
@@ -134,6 +137,7 @@ public class BillEditor extends FileEditor {
     }
 
     SimpleDateFormat showyyyyMMddHHmm = new SimpleDateFormat("yyyy/MM/dd HH:mm");
+
     private void gotoEditItem(BillEntity p, boolean top) {
         if (p == null) {
             p = new BillEntity();
@@ -204,7 +208,7 @@ public class BillEditor extends FileEditor {
             prefix = "-";
             a = -a;
         }
-        prefix = prefix + String.format("%d.%02d", a/100, a%100);
+        prefix = prefix + String.format("%d.%02d", a / 100, a % 100);
         if (prefix.endsWith(".00")) {
             prefix = prefix.substring(0, prefix.length() - 3);
         }
@@ -220,37 +224,15 @@ public class BillEditor extends FileEditor {
         recyclerView.addItemDecoration(dividerItem);
         recyclerView.setAdapter(adapter);
 
-        QuickReplyItemTouchCallback callback = new QuickReplyItemTouchCallback();
-        ItemTouchHelper itemTouchHelper = new ItemTouchHelper(callback);
-        itemTouchHelper.attachToRecyclerView(recyclerView);
+        new ItemTouchHelper(new BaseItemMoveCallback(getActivity()) {
+            @Override
+            protected void onItemMoved(int from, int to) {
+                Collections.swap(datas, from, to);//更换我们数据List的位置
+                adapter.notifyItemMoved(from, to);
+                saveLocalFile();
+            }
+        }).attachToRecyclerView(recyclerView);
     }
 
-
-    private class QuickReplyItemTouchCallback extends ItemTouchHelper.SimpleCallback {
-
-        public QuickReplyItemTouchCallback() {
-            super(ItemTouchHelper.UP | ItemTouchHelper.DOWN, 0);
-        }
-
-        @Override
-        public boolean isItemViewSwipeEnabled() { //是否启用左右滑动
-            return false;
-        }
-
-        @Override
-        public boolean onMove(@NonNull RecyclerView recyclerView, @NonNull RecyclerView.ViewHolder viewHolder, @NonNull RecyclerView.ViewHolder target) {
-            int from = viewHolder.getBindingAdapterPosition();
-            int to = target.getBindingAdapterPosition();
-            Collections.swap(datas, from, to);//更换我们数据List的位置
-            adapter.notifyItemMoved(from, to);
-            saveLocalFile();
-            return true;
-        }
-
-        @Override
-        public void onSwiped(@NonNull RecyclerView.ViewHolder viewHolder, int direction) {
-
-        }
-    }
 
 }

@@ -100,7 +100,7 @@ public class TodoItemAdapter extends RecyclerView.Adapter<TodoItemAdapter.VH> {
             tvContent.setText(item.content);
             ivCheck.setSelected(item.isChecked());
             if (item.isChecked()) {
-                tvContent.getPaint().setFlags(Paint.STRIKE_THRU_TEXT_FLAG);
+                tvContent.getPaint().setFlags(tvContent.getPaint().getFlags() | Paint.STRIKE_THRU_TEXT_FLAG);
             } else {
                 tvContent.getPaint().setFlags(tvContent.getPaint().getFlags() & ~Paint.STRIKE_THRU_TEXT_FLAG);
             }
