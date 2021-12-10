@@ -15,27 +15,23 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
-import lhg.gitnotes.R;
-import lhg.gitnotes.git.GitConfig;
-import lhg.gitnotes.note.pwd.PasswordEntity;
-import lhg.gitnotes.ui.FileEditor;
-import lhg.common.utils.ColorUtils;
-import lhg.common.utils.ToastUtil;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers;
-import io.reactivex.rxjava3.core.Single;
-import io.reactivex.rxjava3.schedulers.Schedulers;
+import lhg.common.utils.ColorUtils;
+import lhg.common.utils.ToastUtil;
+import lhg.gitnotes.R;
+import lhg.gitnotes.git.GitConfig;
+import lhg.gitnotes.note.pwd.PasswordEntity;
+import lhg.gitnotes.ui.FileEditor;
 
-public class PasswordEditor extends FileEditor {
+public class PasswordEditor extends FileEditor<List<PasswordEntity>> {
 
     private static final int RequestCode_editItem = 111;
     RecyclerView recyclerView;
     PasswordItemAdapter adapter;
-    Gson gson;
     final ArrayList<PasswordEntity> datas = new ArrayList<>();
     boolean hasChanged = false;
     private ActionMode selectActionMode;
@@ -59,45 +55,13 @@ public class PasswordEditor extends FileEditor {
 
         findViewById(R.id.btnAdd).setOnClickListener(v -> startActivityForResult(PasswordItemEditor.makeIntent(this, null), RequestCode_editItem));
 
-        gson = new Gson();
-
         setTitleAndSubtitle();
         recyclerView = findViewById(R.id.recyclerView);
 
         adapter = new PasswordItemAdapter();
         initListView();
 
-        if (!isNewFile) {
-            Single.fromCallable(() -> {
-                String text = readFileText();
-                ArrayList<PasswordEntity> datas =  gson.fromJson(text, new TypeToken<ArrayList<PasswordEntity>>(){}.getType());
-                return datas;
-            }).subscribeOn(Schedulers.io())
-                    .observeOn(AndroidSchedulers.mainThread())
-                    .subscribe(datas -> {
-                        this.datas.addAll(datas);
-                        adapter.setItems(this.datas);
-                    }, throwable -> throwable.printStackTrace());
-        } else {
-            adapter.setItems(datas);
-        }
         return true;
-    }
-
-
-    @Override
-    public void onBackPressed() {
-        if (hasChanged) {
-            gitSync(() -> super.onBackPressed());
-        } else {
-            super.onBackPressed();
-        }
-    }
-
-    @Override
-    protected void onSaveLocalFile() throws Throwable {
-        String text = gson.toJson(datas);
-        writeFileText(text);
     }
 
     private void gotoView(PasswordEntity p) {
@@ -143,9 +107,6 @@ public class PasswordEditor extends FileEditor {
         recyclerView.addItemDecoration(dividerItem);
         recyclerView.setAdapter(adapter);
     }
-
-
-
 
 
 
@@ -254,5 +215,30 @@ public class PasswordEditor extends FileEditor {
     protected void saveLocalFile() {
         hasChanged = true;
         super.saveLocalFile();
+    }
+
+    @Override
+    protected WriteCallback<List<PasswordEntity>> onCreateCallback() {
+        Gson gson = new Gson();
+        return new WriteCallback<List<PasswordEntity>>() {
+            @Override
+            public void onWrite() throws Exception {
+                String text = gson.toJson(datas);
+                writeFileText(text);
+            }
+
+            @Override
+            public List<PasswordEntity> onRead() throws Exception {
+                String text = readFileText();
+                ArrayList<PasswordEntity> datas =  gson.fromJson(text, new TypeToken<ArrayList<PasswordEntity>>(){}.getType());
+                return datas;
+            }
+
+            @Override
+            public void onReadSuccess(List<PasswordEntity> content) {
+                datas.addAll(content);
+                adapter.setItems(datas);
+            }
+        };
     }
 }

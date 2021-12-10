@@ -21,11 +21,9 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.List;
 import java.util.UUID;
 
-import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers;
-import io.reactivex.rxjava3.core.Single;
-import io.reactivex.rxjava3.schedulers.Schedulers;
 import lhg.common.utils.ColorUtils;
 import lhg.common.view.InputDialog;
 import lhg.gitnotes.R;
@@ -34,14 +32,13 @@ import lhg.gitnotes.note.todo.TodoEntity;
 import lhg.gitnotes.ui.FileEditor;
 import lhg.gitnotes.ui.view.BaseItemMoveCallback;
 
-public class TodoEditor extends FileEditor {
+public class TodoEditor extends FileEditor<List<TodoEntity>> {
 
     RecyclerView recyclerView;
     TodoItemAdapter adapter;
-    Gson gson;
-    final ArrayList<TodoEntity> datas = new ArrayList<>();
-    boolean hasChanged = false;
+
     int accentColor;
+    final ArrayList<TodoEntity> content = new ArrayList<>();
 
 
     public static Intent makeIntent(Context context, String path, GitConfig gitConfig, String password) {
@@ -59,31 +56,15 @@ public class TodoEditor extends FileEditor {
         setSupportActionBar(findViewById(R.id.toolbar));
         showPrevArrowOnActionBar();
 
-        gson = new Gson();
-
         setTitleAndSubtitle();
         recyclerView = findViewById(R.id.recyclerView);
 
         initListView();
 
-        if (!isNewFile) {
-            Single.fromCallable(() -> {
-                String text = readFileText();
-                ArrayList<TodoEntity> datas =  gson.fromJson(text, new TypeToken<ArrayList<TodoEntity>>(){}.getType());
-                return datas;
-            }).subscribeOn(Schedulers.io())
-                    .observeOn(AndroidSchedulers.mainThread())
-                    .subscribe(datas -> {
-                        this.datas.addAll(datas);
-                        adapter.setItems(this.datas);
-                    }, throwable -> {
-                        throwable.printStackTrace();
-                    });
-        } else {
-            adapter.setItems(datas);
-        }
         return true;
     }
+
+
 
     protected TodoItemAdapter createAdapter() {
         return new TodoItemAdapter(){
@@ -105,7 +86,7 @@ public class TodoEditor extends FileEditor {
                     protected void onDelete(TodoEntity item) {
                         super.onDelete(item);
                         adapter.notifyItemRemoved(getBindingAdapterPosition());
-                        datas.remove(item);
+                        content.remove(item);
                         saveLocalFile();
                     }
                 };
@@ -113,21 +94,6 @@ public class TodoEditor extends FileEditor {
         };
     }
 
-
-    @Override
-    public void onBackPressed() {
-        if (hasChanged) {
-            gitSync(() -> super.onBackPressed());
-        } else {
-            super.onBackPressed();
-        }
-    }
-
-    @Override
-    protected void onSaveLocalFile() throws Throwable {
-        String text = gson.toJson(datas);
-        writeFileText(text);
-    }
 
     private void gotoEditItem(TodoEntity p, boolean top) {
         if (p == null) {
@@ -143,15 +109,15 @@ public class TodoEditor extends FileEditor {
         dialog.setOnInputListener(new InputDialog.SimpleOnInputListener(){
             @Override
             public void onInput(InputDialog dialog, String text) {
-                int index = datas.indexOf(finalP);
+                int index = content.indexOf(finalP);
                 finalP.content = text;
                 finalP.time = System.currentTimeMillis();
                 if (index >= 0) {
-                    datas.set(index, finalP);
+                    content.set(index, finalP);
                     adapter.notifyItemChanged(index);
                 } else {
-                    datas.add(top ? 0 : datas.size(), finalP);
-                    adapter.notifyItemInserted(top ? 0 : datas.size());
+                    content.add(top ? 0 : content.size(), finalP);
+                    adapter.notifyItemInserted(top ? 0 : content.size());
                 }
                 saveLocalFile();
             }
@@ -172,7 +138,7 @@ public class TodoEditor extends FileEditor {
         new ItemTouchHelper(new BaseItemMoveCallback(getActivity()) {
             @Override
             protected void onItemMoved(int from, int to) {
-                Collections.swap(datas, from, to);//更换我们数据List的位置
+                Collections.swap(content, from, to);//更换我们数据List的位置
                 adapter.notifyItemMoved(from, to);
                 saveLocalFile();
             }
@@ -208,8 +174,28 @@ public class TodoEditor extends FileEditor {
     }
 
     @Override
-    protected void saveLocalFile() {
-        hasChanged = true;
-        super.saveLocalFile();
+    protected WriteCallback<List<TodoEntity>> onCreateCallback() {
+        return new WriteCallback<List<TodoEntity>>() {
+            final Gson gson = new Gson();
+            @Override
+            public List<TodoEntity> onRead() throws Exception {
+                String text = readFileText();
+                return gson.fromJson(text, new TypeToken<ArrayList<TodoEntity>>(){}.getType());
+            }
+
+            @Override
+            public void onReadSuccess(List<TodoEntity> it) {
+                if (it != null) {
+                    content.addAll(it);
+                    adapter.setItems(content);
+                }
+            }
+
+            @Override
+            public void onWrite() throws Exception {
+                String text = gson.toJson(content);
+                writeFileText(text);
+            }
+        };
     }
 }

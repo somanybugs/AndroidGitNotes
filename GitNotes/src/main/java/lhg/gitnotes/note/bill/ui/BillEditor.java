@@ -25,11 +25,9 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
+import java.util.List;
 import java.util.UUID;
 
-import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers;
-import io.reactivex.rxjava3.core.Single;
-import io.reactivex.rxjava3.schedulers.Schedulers;
 import lhg.common.utils.ColorUtils;
 import lhg.common.utils.Utils;
 import lhg.gitnotes.R;
@@ -38,13 +36,11 @@ import lhg.gitnotes.note.bill.BillEntity;
 import lhg.gitnotes.ui.FileEditor;
 import lhg.gitnotes.ui.view.BaseItemMoveCallback;
 
-public class BillEditor extends FileEditor {
+public class BillEditor extends FileEditor<List<BillEntity>> {
 
     RecyclerView recyclerView;
     BillItemAdapter adapter;
-    Gson gson;
     final ArrayList<BillEntity> datas = new ArrayList<>();
-    boolean hasChanged = false;
     int accentColor;
     TextView tvTotal;
 
@@ -64,8 +60,6 @@ public class BillEditor extends FileEditor {
         setSupportActionBar(findViewById(R.id.toolbar));
         showPrevArrowOnActionBar();
 
-        gson = new Gson();
-
         setTitleAndSubtitle();
         recyclerView = findViewById(R.id.recyclerView);
         tvTotal = findViewById(R.id.tvTotal);
@@ -73,25 +67,6 @@ public class BillEditor extends FileEditor {
 
         initListView();
 
-        if (!isNewFile) {
-            Single.fromCallable(() -> {
-                String text = readFileText();
-                ArrayList<BillEntity> datas = gson.fromJson(text, new TypeToken<ArrayList<BillEntity>>() {
-                }.getType());
-                return datas;
-            }).subscribeOn(Schedulers.io())
-                    .observeOn(AndroidSchedulers.mainThread())
-                    .subscribe(datas -> {
-                        this.datas.addAll(datas);
-                        adapter.setItems(this.datas);
-                        updateTotal();
-                    }, throwable -> {
-                        throwable.printStackTrace();
-                    });
-        } else {
-            adapter.setItems(datas);
-            updateTotal();
-        }
         return true;
     }
 
@@ -117,22 +92,6 @@ public class BillEditor extends FileEditor {
                 };
             }
         };
-    }
-
-
-    @Override
-    public void onBackPressed() {
-        if (hasChanged) {
-            gitSync(() -> super.onBackPressed());
-        } else {
-            super.onBackPressed();
-        }
-    }
-
-    @Override
-    protected void onSaveLocalFile() throws Throwable {
-        String text = gson.toJson(datas);
-        writeFileText(text);
     }
 
     SimpleDateFormat showyyyyMMddHHmm = new SimpleDateFormat("yyyy/MM/dd HH:mm");
@@ -234,8 +193,29 @@ public class BillEditor extends FileEditor {
 
 
     @Override
-    protected void saveLocalFile() {
-        hasChanged = true;
-        super.saveLocalFile();
+    protected WriteCallback<List<BillEntity>> onCreateCallback() {
+        return new WriteCallback<List<BillEntity>>() {
+            final Gson gson = new Gson();
+            @Override
+            public List<BillEntity> onRead() throws Exception {
+                String text = readFileText();
+                return gson.fromJson(text, new TypeToken<ArrayList<BillEntity>>(){}.getType());
+            }
+
+            @Override
+            public void onReadSuccess(List<BillEntity> it) {
+                if (it != null) {
+                    datas.addAll(it);
+                }
+                adapter.setItems(datas);
+                updateTotal();
+            }
+
+            @Override
+            public void onWrite() throws Exception {
+                String text = gson.toJson(datas);
+                writeFileText(text);
+            }
+        };
     }
 }

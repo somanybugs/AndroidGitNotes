@@ -10,22 +10,8 @@ import android.view.Menu;
 import android.view.MenuItem;
 
 import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 
 import com.bumptech.glide.Glide;
-import lhg.gitnotes.R;
-import lhg.gitnotes.git.GitConfig;
-import lhg.gitnotes.ui.FileViewer;
-import lhg.canvasscrollview.CanvasScrollView;
-import lhg.canvasscrollview.SelectableAdapter;
-import lhg.markdown.ImagePlugin;
-import lhg.markdown.MarkDownParser;
-import lhg.markdown.MarkDownTheme;
-import lhg.markdown.TablePlugin;
-import lhg.common.utils.DimenUtils;
-import lhg.common.utils.ImageUtils;
-import lhg.common.utils.ToastUtil;
-import lhg.common.utils.Utils;
 
 import org.jetbrains.annotations.NotNull;
 
@@ -35,8 +21,20 @@ import java.util.List;
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers;
 import io.reactivex.rxjava3.core.Single;
 import io.reactivex.rxjava3.schedulers.Schedulers;
+import lhg.canvasscrollview.CanvasScrollView;
+import lhg.canvasscrollview.SelectableAdapter;
+import lhg.common.utils.DimenUtils;
+import lhg.common.utils.ImageUtils;
+import lhg.common.utils.Utils;
+import lhg.gitnotes.R;
+import lhg.gitnotes.git.GitConfig;
+import lhg.gitnotes.ui.FileViewer;
+import lhg.markdown.ImagePlugin;
+import lhg.markdown.MarkDownParser;
+import lhg.markdown.MarkDownTheme;
+import lhg.markdown.TablePlugin;
 
-public class MDViewer extends FileViewer {
+public class MDViewer extends FileViewer<List<CanvasScrollView.CanvasBlock>> {
 
     private static final String TAG = "MDViewer";
     CanvasScrollView canvasScrollView;
@@ -58,37 +56,7 @@ public class MDViewer extends FileViewer {
         canvasScrollView = findViewById(R.id.canvasScrollView);
         canvasScrollView.setAdapter(adapter = new MyAdapter(getActivity()));
         setTitleAndSubtitle();
-        loadFile();
         return true;
-    }
-
-
-    private void loadFile() {
-        Single.fromCallable(() -> {
-            String text = readFileText();
-            TextPaint textpaint = new TextPaint();
-            textpaint.setTextSize(DimenUtils.sp2px(getActivity(), 16));
-            MarkDownTheme theme = MarkDownTheme.builderWithDefaults(getApplicationContext())
-                    .textPaint(textpaint)
-                    .build();
-            return new MarkDownParser(theme)
-                    .usePlugin(new ImagePlugin() {
-
-                        @Override
-                        public ImageSpan createImageSpan() {
-                            return new MyImageSpan();
-                        }
-                    })
-                    .usePlugin(new TablePlugin())
-                    .render(text);
-        }).subscribeOn(Schedulers.io())
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(node -> {
-                    adapter.setDatas(node);
-                }, throwable -> {
-                    throwable.printStackTrace();
-                    ToastUtil.show(getApplication(), "markdown parse error " + throwable.getMessage());
-                });
     }
 
     class MyImageSpan extends ImagePlugin.ImageSpan {
@@ -138,12 +106,35 @@ public class MDViewer extends FileViewer {
         return super.onOptionsItemSelected(item);
     }
 
+
     @Override
-    protected void onActivityResult(int requestCode, int resultCode, @Nullable @org.jetbrains.annotations.Nullable Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
-        if (requestCode == RequestCode_Edit && resultCode == RESULT_OK) {
-            loadFile();
-        }
+    protected ReadCallback<List<CanvasScrollView.CanvasBlock>> onCreateCallback() {
+        return new ReadCallback<List<CanvasScrollView.CanvasBlock>>() {
+            @Override
+            public List<CanvasScrollView.CanvasBlock> onRead() throws Exception {
+                String text = readFileText();
+                TextPaint textpaint = new TextPaint();
+                textpaint.setTextSize(DimenUtils.sp2px(getActivity(), 16));
+                MarkDownTheme theme = MarkDownTheme.builderWithDefaults(getApplicationContext())
+                        .textPaint(textpaint)
+                        .build();
+                return new MarkDownParser(theme)
+                        .usePlugin(new ImagePlugin() {
+
+                            @Override
+                            public ImageSpan createImageSpan() {
+                                return new MyImageSpan();
+                            }
+                        })
+                        .usePlugin(new TablePlugin())
+                        .render(text);
+            }
+
+            @Override
+            public void onReadSuccess(List<CanvasScrollView.CanvasBlock> content) {
+                adapter.setDatas(content);
+            }
+        };
     }
 
     static class MyAdapter extends SelectableAdapter {

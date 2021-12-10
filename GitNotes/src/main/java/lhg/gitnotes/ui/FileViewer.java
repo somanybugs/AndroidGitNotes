@@ -5,8 +5,12 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.text.TextUtils;
 
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.ActionBar;
 
+import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers;
+import io.reactivex.rxjava3.core.Single;
+import io.reactivex.rxjava3.schedulers.Schedulers;
 import lhg.gitnotes.git.GitConfig;
 import lhg.gitnotes.app.AppBaseActivity;
 import lhg.gitnotes.utils.AESUtls;
@@ -17,7 +21,7 @@ import lhg.common.utils.Utils;
 
 import java.io.File;
 
-public class FileViewer extends AppBaseActivity {
+public abstract class FileViewer<T> extends AppBaseActivity {
     public static final String IntentKey_Path = "path";
     public static final String IntentKey_GitConfig = "gitConfig";
     public static final String IntentKey_Password = "password";
@@ -28,6 +32,7 @@ public class FileViewer extends AppBaseActivity {
     protected String password;
     protected byte[] key;
     protected GitConfig gitConfig;
+    protected ReadCallback<T> callback;
 
     protected static Intent makeIntent(Context context, Class<? extends FileViewer> clazz, String path, GitConfig gitConfig, String password) {
         Intent intent = new Intent(context, clazz);
@@ -94,7 +99,42 @@ public class FileViewer extends AppBaseActivity {
         }
         gitConfig = (GitConfig) getIntent().getSerializableExtra(IntentKey_GitConfig);
         parent = file.getParentFile();
+
+
+        callback = onCreateCallback();
+
+        loadFile();
         return true;
     }
 
+    protected void loadFile() {
+        if (file.exists()) {
+            Single.fromCallable(() -> callback.onRead())
+                    .subscribeOn(Schedulers.io())
+                    .observeOn(AndroidSchedulers.mainThread())
+                    .subscribe(it -> callback.onReadSuccess(it), e -> {
+                        callback.onReadSuccess(null);
+                        e.printStackTrace();
+                    });
+        } else {
+            callback.onReadSuccess(null);
+        }
+    }
+
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, @Nullable @org.jetbrains.annotations.Nullable Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (requestCode == RequestCode_Edit && resultCode == RESULT_OK) {
+            loadFile();
+        }
+    }
+
+    protected abstract ReadCallback<T> onCreateCallback();
+
+    protected interface ReadCallback<A> {
+       A onRead() throws Exception;
+
+       void onReadSuccess(A content);
+    }
 }

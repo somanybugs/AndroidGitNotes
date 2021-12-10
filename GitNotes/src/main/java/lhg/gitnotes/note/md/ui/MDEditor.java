@@ -12,9 +12,6 @@ import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
-import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers;
-import io.reactivex.rxjava3.core.Single;
-import io.reactivex.rxjava3.schedulers.Schedulers;
 import lhg.common.utils.ColorUtils;
 import lhg.common.utils.DimenUtils;
 import lhg.common.utils.DrawableUtils;
@@ -23,7 +20,7 @@ import lhg.gitnotes.R;
 import lhg.gitnotes.git.GitConfig;
 import lhg.gitnotes.ui.FileEditor;
 
-public class MDEditor extends FileEditor {
+public class MDEditor extends FileEditor<String> {
     EditText editText;
     final UndoRedo undoRedo = new UndoRedo();
     TextView tvTitle;
@@ -47,19 +44,6 @@ public class MDEditor extends FileEditor {
         editText = findViewById(R.id.editText);
         tvTitle.setText(file.getName());
 
-        if (!isNewFile) {
-            Single.fromCallable(() -> readFileText())
-                    .subscribeOn(Schedulers.io())
-                    .observeOn(AndroidSchedulers.mainThread())
-                    .subscribe(text -> {
-                        editText.setText(text);
-                        initRedoUndo();
-                    }, throwable -> {
-                        throwable.printStackTrace();
-                    });
-        } else {
-            initRedoUndo();
-        }
         initBottomBar();
         return true;
     }
@@ -75,7 +59,10 @@ public class MDEditor extends FileEditor {
 
     private void initRedoUndo() {
         undoRedo.init(editText);
-        undoRedo.setCallback((i, j) -> invalidateOptionsMenu());
+        undoRedo.setCallback((i, j) -> {
+            invalidateOptionsMenu();
+            setContentChanged(hasChanged());
+        });
     }
 
     private void replaceText(String txt) {
@@ -103,20 +90,6 @@ public class MDEditor extends FileEditor {
 
     protected boolean hasChanged() {
         return UndoRedo.EmptyCommandId != undoRedo.getLastCanUndoId();
-    }
-
-    protected void onSaveLocalFile() throws Throwable {
-        String text = editText.getText().toString();
-        writeFileText(text);
-    }
-
-    @Override
-    public void onBackPressed() {
-        if (hasChanged()) {
-            gitSync(() -> super.onBackPressed());
-        } else {
-            super.onBackPressed();
-        }
     }
 
     @Override
@@ -165,5 +138,27 @@ public class MDEditor extends FileEditor {
         view.setText(text);
         parent.addView(view, new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT, 1));
         view.setOnClickListener(v -> runnable.run());
+    }
+
+    @Override
+    protected WriteCallback onCreateCallback() {
+        return new WriteCallback<String>() {
+            @Override
+            public String onRead() throws Exception {
+                return readFileText();
+            }
+
+            @Override
+            public void onReadSuccess(String it) {
+                editText.setText(it);
+                initRedoUndo();
+            }
+
+            @Override
+            public void onWrite() throws Exception {
+                String text = editText.getText().toString();
+                writeFileText(text);
+            }
+        };
     }
 }

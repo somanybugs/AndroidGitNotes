@@ -7,18 +7,11 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.TextView;
 
-import androidx.annotation.Nullable;
-
 import lhg.gitnotes.R;
 import lhg.gitnotes.git.GitConfig;
 import lhg.gitnotes.ui.FileViewer;
-import lhg.common.utils.ToastUtil;
 
-import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers;
-import io.reactivex.rxjava3.core.Single;
-import io.reactivex.rxjava3.schedulers.Schedulers;
-
-public class TxtViewer extends FileViewer {
+public class TxtViewer extends FileViewer<String> {
 
     private static final String TAG = "MDViewer";
     TextView textView;
@@ -39,21 +32,23 @@ public class TxtViewer extends FileViewer {
         textView = findViewById(R.id.textView);
         textView.setMovementMethod(LinkMovementMethod.getInstance());
         setTitleAndSubtitle();
-        loadFile();
         return true;
     }
 
+    @Override
+    protected ReadCallback<String> onCreateCallback() {
+        return new ReadCallback<String>() {
+            @Override
+            public String onRead() throws Exception {
+                return readFileText();
+            }
 
-    private void loadFile() {
-        Single.fromCallable(() -> readFileText())
-                .subscribeOn(Schedulers.io())
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(node -> textView.setText(node), throwable -> {
-                    throwable.printStackTrace();
-                    ToastUtil.show(getApplication(), "markdown parse error " + throwable.getMessage());
-                });
+            @Override
+            public void onReadSuccess(String content) {
+                textView.setText(content);
+            }
+        };
     }
-
 
 
     @Override
@@ -69,13 +64,5 @@ public class TxtViewer extends FileViewer {
             return true;
         }
         return super.onOptionsItemSelected(item);
-    }
-
-    @Override
-    protected void onActivityResult(int requestCode, int resultCode, @Nullable @org.jetbrains.annotations.Nullable Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
-        if (requestCode == RequestCode_Edit && resultCode == RESULT_OK) {
-            loadFile();
-        }
     }
 }
