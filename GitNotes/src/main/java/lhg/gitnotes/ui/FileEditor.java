@@ -63,17 +63,11 @@ public abstract class FileEditor<T> extends FileViewer<T> {
     }
 
     protected void gitSync() {
+        if (saveState.needSave()) {
+            trySaveFile();
+        }
         String message = (isNewFile ? "Add " : "Modify ") + file.getName();
-        GitService.instance().submit(new GitAdd(gitConfig, file) {
-            @Override
-            public void onRun() throws Throwable {
-                if (saveState.needSave()) {
-                    trySaveFile();
-                }
-                getGit().add().addFilepattern(getGitConfig().getRelativePath(file.getAbsolutePath())).call();
-                super.onRun();
-            }
-        }.setMessage(message));
+        GitService.instance().submit(new GitAdd(gitConfig, file).setMessage(message));
     }
 
     protected void setContentChanged(boolean changed) {
