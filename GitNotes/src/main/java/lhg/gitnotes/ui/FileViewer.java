@@ -117,7 +117,7 @@ public abstract class FileViewer<T> extends AppBaseActivity {
                         e.printStackTrace();
                     });
         } else {
-            callback.onReadSuccess(null);
+            mUiHandler.postDelayed(() -> callback.onReadSuccess(null), 1);
         }
     }
 
